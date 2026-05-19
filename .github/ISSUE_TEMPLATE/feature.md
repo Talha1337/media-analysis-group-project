@@ -2,7 +2,7 @@
 name: New feature
 about: Document when a new feature is needed
 labels: 'feature'
-assignees: 'Talha1337,carolaguev,Kacper-Li'
+assignees: ''
 
 ---
 **Where**
