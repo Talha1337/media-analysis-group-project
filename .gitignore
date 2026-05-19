@@ -4,5 +4,5 @@
 *.tfstate.backup
 
 # other
-.venv
+*.venv
 __pycache__
