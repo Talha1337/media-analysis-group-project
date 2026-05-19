@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "public_figures" {
-  name           = "PublicFigures"
+  name           = "c23-epipelagic-dynamo-public-figures"
   billing_mode   = "PAY_PER_REQUEST" # On-demand capacity (cost-effective for starters)
   hash_key       = "PK" # Will hold PublicFigureID (e.g., "PF_001")
   range_key      = "SK"  # Will hold "METADATA" OR "ARTICLE#Timestamp#TitleSlug"
