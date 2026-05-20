@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 
 
 def connect_to_dynamodb() -> BaseClient:
-    """Initialize connection to DynamoDB table."""
+    """Initialise connection to DynamoDB."""
 
 
 def assign_feed_id(feed_name: str) -> str:
