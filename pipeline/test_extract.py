@@ -1,7 +1,7 @@
 """Testing the extract script with pytest."""
 
 import pytest
-from extract import placeholder
+from pipeline.extract import placeholder
 
 
 
