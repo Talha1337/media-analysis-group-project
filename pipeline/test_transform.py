@@ -63,7 +63,7 @@ class findSentimentTests:
     """Tests for the find_sentiment function."""
 
     @pytest.mark.parametrize(
-        "content, expected_sentiment",
+        "content",
         [
             ("I love this new policy! It's fantastic."),
             ("This is an amazing day for science and technology."),
@@ -75,7 +75,7 @@ class findSentimentTests:
         assert find_sentiment(content) > 0
 
     @pytest.mark.parametrize(
-        "content, expected_sentiment",
+        "content",
         [
             ("I hate this new policy! It's terrible."),
             ("This is a horrible day for science and technology."),
@@ -87,7 +87,7 @@ class findSentimentTests:
         assert find_sentiment(content) < 0
 
     @pytest.mark.parametrize(
-        "content, expected_sentiment",
+        "content",
         [
             ("There is a chair on the table."),
             ("The sky is blue and the grass is green."),
