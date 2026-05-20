@@ -1,13 +1,14 @@
 """Tests for the transform functions in transform.py."""
 
-from transform import (
+import pytest
+
+from pipeline.transform import (
     find_names,
     find_sentiment,
     get_key_words,
     enrich_data,
     enrich_all_data,
 )
-import pytest
 
 
 class findNameTests:
