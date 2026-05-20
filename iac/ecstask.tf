@@ -10,7 +10,7 @@ resource "aws_ecr_repository" "c23_epipelagic_ecr_dynamo" {
 resource "null_resource" "dummy_image" {
   provisioner "local-exec" {
     command = <<EOF
-      aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}
+      aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}
       docker pull public.ecr.aws/lambda/provided:al2023
       docker tag public.ecr.aws/lambda/provided:al2023 ${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}:latest
       docker push ${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}:latest
