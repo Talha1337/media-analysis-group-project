@@ -1,3 +1,4 @@
 feedparser
 pylint
 pytest
+spacy
