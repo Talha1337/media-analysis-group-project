@@ -96,7 +96,7 @@ enable=
 
 disable=
     attribute-defined-outside-init,
-    no-name-in-module
+    no-name-in-module,
     invalid-name,
     missing-docstring,
     protected-access,
