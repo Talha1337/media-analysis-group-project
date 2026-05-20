@@ -61,8 +61,10 @@ class TestExtractURLs:
         "https://feeds.bbci.co.uk/news/rss.xml",
         "https://feeds.skynews.com/feeds/rss/home.xml"
     ])
-    def test_extract_rss_feed_valid(self, valid_urls):
+    @patch('extract.feedparser.parse')
+    def test_extract_rss_feed_valid(self, mock_parse, valid_urls, mock_feedparser_response):
         """Test that extraction works for valid input types."""
+        mock_parse.return_value = mock_feedparser_response
         extract_rss_feed(valid_urls)
 
 
