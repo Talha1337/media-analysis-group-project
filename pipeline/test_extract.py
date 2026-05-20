@@ -73,21 +73,26 @@ class TestExtractURLs:
 class TestExtractFeedData:
     """Test cases for outputs from the extract script."""
 
-    def test_extract_all_rss_feeds_output_type(self):
+    @patch('extract.feedparser.parse')
+    def test_extract_all_rss_feeds_output_type(self, mock_parse, mock_feedparser_response):
         """Test that the output of extract_all_rss_feeds is a list."""
+        mock_parse.return_value = mock_feedparser_response
         result = extract_all_rss_feeds()
         assert isinstance(result, list)
 
-    def test_extract_all_rss_feeds_output_not_empty(self):
+    @patch('extract.feedparser.parse')
+    def test_extract_all_rss_feeds_output_not_empty(self, mock_parse, mock_feedparser_response):
         """Test that the output of extract_all_rss_feeds is not empty."""
+        mock_parse.return_value = mock_feedparser_response
         result = extract_all_rss_feeds()
         assert len(result) > 0
 
-    def test_extract_rss_feed_output_type(self, mock_feedparser_response):
+    @patch('extract.feedparser.parse')
+    def test_extract_rss_feed_output_type(self, mock_parse, mock_feedparser_response):
         """Test that the output of extract_rss_feed is a dictionary."""
-        with patch('extract.feedparser.parse', return_value=mock_feedparser_response):
-            result = extract_rss_feed('http://example.com/rss')
-            assert isinstance(result, dict)
+        mock_parse.return_value = mock_feedparser_response
+        result = extract_rss_feed('http://example.com/rss')
+        assert isinstance(result, dict)
 
     @patch('extract.feedparser.parse')
     def test_extract_rss_feed_structure(self, mock_parse, mock_feedparser_response):
@@ -113,3 +118,39 @@ class TestExtractFeedData:
             assert 'description' in entry
             assert 'pubDate' in entry
             assert 'guid' in entry
+
+    @pytest.mark.parametrize("invalid_extracts", [
+        100,
+        "hello",
+        True,
+        None,
+        33.33,
+        [1, 'hey', False],
+    ])
+    @patch('extract.feedparser.parse')
+    def test_extract_rss_feed_raises_errors(self, mock_parse, invalid_extracts):
+        """Test that extract_rss_feed raises type errors for invalid feed data."""
+        mock_parse.return_value = invalid_extracts
+        with pytest.raises(TypeError):
+            extract_rss_feed('unimportant')
+
+    @patch('extract.feedparser.parse')
+    def test_extract_rss_feed_raises_errors_for_invalid_entries(self, mock_parse):
+        """Test that extract_rss_feed raises errors for invalid entries."""
+        mock_response = mock_parse.return_value
+        mock_response.feed = {
+            'title': 'BBC News - Home',
+            'link': 'https://www.bbc.co.uk/news',
+            'updated': 'Wed, 20 May 2026 14:30:00 GMT',
+        }
+        mock_response.entries = [
+            {
+                'title': 'Breaking: Tech Company Announces New Product',
+                # missing link
+                'pubDate': 'Wed, 20 May 2026 14:25:00 GMT',
+                'description': 'A major technology company has announced a new product today.',
+                'guid': 'https://www.bbc.co.uk/news/tech/article1'
+            }
+        ]
+        with pytest.raises(ValueError):
+            extract_rss_feed('http://example.com/rss')
