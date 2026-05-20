@@ -1,10 +1,11 @@
 """A load script to interact with DynamoDB on AWS."""
 
 from boto3 import client
+from botocore.client import BaseClient
 from botocore.exceptions import ClientError
 
 
-def connect_to_dynamodb() -> client:
+def connect_to_dynamodb() -> BaseClient:
     """Initialize connection to DynamoDB table."""
 
 
