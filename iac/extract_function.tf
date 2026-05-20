@@ -1,9 +1,3 @@
-# 1. Look up the latest image metadata from ECR
-data "aws_ecr_image" "latest_image" {
-  repository_name = aws_ecr_repository.c23_epipelagic_ecr_dynamo.name # Your repo name
-  image_tag       = "latest"
-}
-
 resource "aws_iam_policy" "c23_epipelagic_lambda_policy" {
     name = "c23-epipelagic-lambda-policy"
     policy = data.aws_iam_policy_document.lambda_role_doc.json
