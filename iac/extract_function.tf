@@ -62,11 +62,6 @@ resource "aws_lambda_function" "c23_epipelagic_container_function" {
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}:latest"
 
-  image_config {
-    entry_point = ["/lambda-entrypoint.sh"]
-    command     = ["app.handler"]
-  }
-
   memory_size = 512
   timeout     = 30
 
