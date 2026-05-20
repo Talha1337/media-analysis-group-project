@@ -98,7 +98,6 @@ disable=
     attribute-defined-outside-init,
     no-name-in-module,
     invalid-name,
-    missing-docstring,
     protected-access,
     too-few-public-methods,
     # handled by black
