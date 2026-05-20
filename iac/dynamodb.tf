@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "public_figures" {
+resource "aws_dynamodb_table" "c23_epipelagic_public_figures" {
   name           = "c23-epipelagic-dynamo-public-figures"
   billing_mode   = "PAY_PER_REQUEST" # On-demand capacity (cost-effective for starters)
   hash_key       = "PK" # Will hold PublicFigureID (e.g., "PF_001")
@@ -32,6 +32,6 @@ resource "aws_dynamodb_table" "public_figures" {
 
   tags = {
     Environment = "Production"
-    Project     = "PublicFiguresDB"
+    Project     = "C23EpipelagicDashboard"
   }
 }
