@@ -9,13 +9,13 @@ def connect_to_dynamodb() -> BaseClient:
     """Initialize connection to DynamoDB table."""
 
 
-def generate_article_sort_key(timestamp: str, title: str) -> str:
-    """Creates a unique article SK with the format: 
-    ARTICLE#[FeedName]#[ISO8601Timestamp]#[TitleHash]"""
-
-
 def assign_feed_id(feed_name: str) -> str:
     """Assigns a unique feed ID based on the feed name."""
+
+
+def generate_article_sort_key(published_at: str, feed_id: str) -> str:
+    """Creates a unique article SK with the format: 
+    ARTICLE#[feed_id]#[published_at]#[title_hash]"""
 
 
 def prepare_item_for_load(article: dict, public_figure_name: str) -> dict:
