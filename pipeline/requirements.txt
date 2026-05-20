@@ -1,0 +1,5 @@
+feedparser
+pylint
+pytest
+spacy
+vader
