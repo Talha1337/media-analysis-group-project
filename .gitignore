@@ -2,6 +2,7 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
+*.hcl
 
 # other
 *.venv

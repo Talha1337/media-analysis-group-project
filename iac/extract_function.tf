@@ -54,10 +54,19 @@ resource "aws_lambda_function" "c23_epipelagic_container_function" {
   function_name = "c23-epipelagic-container-function"
   role          = aws_iam_role.c23_epipelagic_lambda_role.arn
   package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}:latest"
+  image_uri     = "${aws_ecr_repository.c23_epipelagic_ecr_dynamo.repository_url}"
 
   memory_size = 512
   timeout     = 30
 
   architectures = ["arm64"] # Graviton support for better price/performance
+}
+
+resource "aws_lambda_permission" "c23_api_gateway_invoke_permission" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.c23_epipelagic_container_function.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.c23_epipelagic_http_api.execution_arn}/*"
 }
