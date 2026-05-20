@@ -7,6 +7,10 @@ resource "aws_ecr_repository" "c23_epipelagic_ecr_dynamo" {
   }
 }
 
+data "aws_iam_role" "ecs_task_execution_role" {
+    name = "ecsTaskExecutionRole"
+}
+
 data "aws_iam_policy_document" "c23_epipelagic_task_role_doc" {
   # First block: Athena
 statement {
@@ -58,7 +62,7 @@ resource "aws_ecs_task_definition" "c23_epipelagic_ecs_task" {
 
   network_mode = "awsvpc"
   task_role_arn = "${aws_iam_role.c23_epipelagic_task_role.arn}"
-  execution_role_arn = "arn:aws:iam::129033205317:role/ecsTaskExecutionRole"
+  execution_role_arn = data.aws_iam_role.ecs_task_execution_role.arn
   container_definitions = jsonencode([
     {
       name      = "c23-epipelagic-dynamo-container"
