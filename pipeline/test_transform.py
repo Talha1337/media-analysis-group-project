@@ -11,7 +11,7 @@ from pipeline.transform import (
 )
 
 
-class findNameTests:
+class TestFindName:
     """Tests for the find_names function."""
 
     @pytest.mark.parametrize(
@@ -59,7 +59,7 @@ class findNameTests:
             )  # No names should raise an error
 
 
-class findSentimentTests:
+class TestFindSentiment:
     """Tests for the find_sentiment function."""
 
     @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ class findSentimentTests:
         assert -0.1 < find_sentiment(content) < 0.1
 
 
-class findKeywordTests:
+class TestFindKeywords:
     """Tests for the get_key_words function."""
 
     def test_get_key_words_correct_type(self):
@@ -120,7 +120,7 @@ class findKeywordTests:
             get_key_words("asldkfj asldkfj asldkfj")
 
 
-class enrichDataTests:
+class TestEnrichData:
     @pytest.fixture
     def sample_article(self):
         """Provides a sample article content dictionary for testing."""
@@ -137,7 +137,7 @@ class enrichDataTests:
         assert "key_words" in enriched_article
 
 
-class enrichAllDataTests:
+class TestEnrichAllData:
     @pytest.fixture
     def sample_articles(self):
         """Provides a list of sample article content dictionaries for testing."""
