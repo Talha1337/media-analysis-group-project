@@ -4,3 +4,4 @@ pytest
 spacy
 vaderSentiment
 boto3
+keyword-spacy
