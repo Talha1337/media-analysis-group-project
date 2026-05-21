@@ -1,6 +1,9 @@
 """A transform script to process and clean the extracted data, ready to load into DynamoDB."""
 
 import spacy
+
+# Crucial: You must import the keyword_spacy package to register the factory!
+import keyword_spacy
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
@@ -18,11 +21,26 @@ def find_sentiment(content: str) -> float:
     """Analyzes the sentiment of the given content using VADER, giving a score between -1 (negative) and 1 (positive)."""
     sid_obj = SentimentIntensityAnalyzer()
     sentiment_dict = sid_obj.polarity_scores(content)
-    return sentiment_dict['compound']
+    return sentiment_dict["compound"]
 
 
 def get_key_words(content: str) -> list[str]:
-    """Cleans the content by removing stop words and punctuation, returning a list of significant words."""
+    """Extracts up to 10 keyword phrases from the content as two-word n-grams.
+
+    Returns a list of extracted keyword strings. Raises ValueError if the
+    extractor does not find any keywords in the content.
+    """
+    nlp = spacy.load("en_core_web_md")
+    nlp.add_pipe(
+        "keyword_extractor",
+        last=True,
+        config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
+    )
+    doc = nlp(content)
+    all_keywords = [keyword[0] for keyword in doc._.keywords]
+    if not all_keywords:
+        raise ValueError("No keywords found in the content.")
+    return all_keywords
 
 
 def enrich_data(article_content: dict) -> dict:
@@ -57,3 +75,9 @@ if __name__ == "__main__":
         f"Names in positive article: {find_names(positive_sample_article['content'])}")
     print(
         f"Names in negative article: {find_names(negative_sample_article['content'])}")
+    print(
+        f"Positive article keywords: {get_key_words(positive_sample_article['content'])}"
+    )
+    print(
+        f"Negative article keywords: {get_key_words(negative_sample_article['content'])}"
+    )
