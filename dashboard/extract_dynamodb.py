@@ -1,4 +1,4 @@
-"""Utilities for extracting public figure mention volumes from DynamoDB."""
+"""Streamlit dashboard and DynamoDB helpers for public figure mention volume data."""
 
 import boto3
 from boto3.dynamodb.conditions import Key
