@@ -6,7 +6,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 def find_names(content: str) -> list[str]:
     """Extracts names of public figures from the given content using spaCy."""
-    nlp = spacy.load("en_core_web_md")  # Load the English model
+    nlp = spacy.load("en_core_web_sm")  # Load the English model
     doc = nlp(content)
 
     # Extract PERSON entities
