@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "c23_epipelagic_ecr_dynamo" {
-  name                 = "c23-epipelagic-ecr-dynamo"
+  name                 = "c${var.COHORT_NUMBER}-epipelagic-ecr-dynamo"
   image_tag_mutability = "MUTABLE"
   force_delete = true
   image_scanning_configuration {
@@ -8,7 +8,7 @@ resource "aws_ecr_repository" "c23_epipelagic_ecr_dynamo" {
 }
 
 resource "aws_ecr_repository" "c23_epipelagic_ecr_etl" {
-  name                 = "c23-epipelagic-ecr-etl"
+  name                 = "c${var.COHORT_NUMBER}-epipelagic-ecr-etl"
   image_tag_mutability = "MUTABLE"
   force_delete = true
   image_scanning_configuration {
@@ -17,7 +17,7 @@ resource "aws_ecr_repository" "c23_epipelagic_ecr_etl" {
 }
 
 resource "aws_ecr_repository" "c23_epipelagic_ecr_dashboard" {
-  name                 = "c23-epipelagic-ecr-dashboard"
+  name                 = "c${var.COHORT_NUMBER}-epipelagic-ecr-dashboard"
   image_tag_mutability = "MUTABLE"
   force_delete = true
   image_scanning_configuration {
@@ -136,12 +136,12 @@ data "aws_iam_policy_document" "dashboard_task_policy_doc" {
 }
 
 resource "aws_iam_policy" "c23_epipelagic_dashboard_task_policy" {
-    name = "c23-epipelagic-dashboard-task-policy"
+    name = "c${var.COHORT_NUMBER}-epipelagic-dashboard-task-policy"
     policy = data.aws_iam_policy_document.dashboard_task_policy_doc.json
 }
 
 resource "aws_iam_policy" "c23_epipelagic_etl_task_policy" {
-    name = "c23-epipelagic-etl-task-policy"
+    name = "c${var.COHORT_NUMBER}-epipelagic-etl-task-policy"
     policy = data.aws_iam_policy_document.etl_task_policy_doc.json
 }
 
@@ -156,7 +156,7 @@ resource "aws_iam_role_policy_attachment" "dashboard_task_policy_attachment" {
 }
 
 resource "aws_ecs_task_definition" "c23_epipelagic_etl_task" {
-  family                   = "c23-epipelagic-etl-task"
+  family                   = "c${var.COHORT_NUMBER}-epipelagic-etl-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
@@ -184,7 +184,7 @@ resource "aws_ecs_task_definition" "c23_epipelagic_etl_task" {
 }
 
 resource "aws_ecs_task_definition" "c23_epipelagic_dashboard_task" {
-  family                   = "c23-epipelagic-dashboard-task"
+  family                   = "c${var.COHORT_NUMBER}-epipelagic-dashboard-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
@@ -203,7 +203,7 @@ resource "aws_ecs_task_definition" "c23_epipelagic_dashboard_task" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/c23-epipelagic-dashboard-logs"
+          "awslogs-group"         = "/ecs/c${var.COHORT_NUMBER}-epipelagic-dashboard-logs"
           "awslogs-region"        = var.REGION
           "awslogs-stream-prefix" = "dashboard"
         }
