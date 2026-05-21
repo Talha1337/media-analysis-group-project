@@ -75,7 +75,7 @@ resource "aws_iam_role" "c23_epipelagic_etl_role" {
         Effect = "Allow"
         Sid    = ""
         Principal = {
-          Service = ["ecs-tasks.amazonaws.com", "scheduler.amazonaws.com"] # Allow both ECS and EventBridge to assume this role
+          Service = ["ecs-tasks.amazonaws.com"] # Allow both ECS and EventBridge to assume this role
         }
       },
     ]
