@@ -3,30 +3,35 @@
 from datetime import datetime
 import feedparser
 
-FEED_URLS = [
-    "https://feeds.bbci.co.uk/news/rss.xml",
-    "https://feeds.skynews.com/feeds/rss/home.xml"
-]
 
 def extract_rss_feed(url: str) -> dict:
     """Extracts data from a single RSS feed and its entries."""
     data = feedparser.parse(url)
 
     return {
-        'feed_name': data.feed.get('title', 'No title'),
-        'feed_link': data.feed.get('link', 'No link'),
-        'feed_updated_at': data.feed.get('updated', 'No update time'),
-        'entries': data.entries,
-        'extracted_at': datetime.now().isoformat()
+        "feed_name": data.feed.get("title", "No title"),
+        "feed_link": data.feed.get("link", "No link"),
+        "feed_updated_at": data.feed.get("updated", "No update time"),
+        "entries": data.entries,
+        "extracted_at": datetime.now().isoformat(),
     }
 
 
-def extract_all_rss_feeds() -> list:
+def extract_all_rss_feeds(urls: list[str]) -> list:
     """Extracts data from all RSS feeds."""
     all_data = []
-    
-    for url in FEED_URLS:
+
+    for url in urls:
         feed_data = extract_rss_feed(url)
         all_data.append(feed_data)
-    
+
     return all_data
+
+
+if __name__ == "__main__":
+    urls = [
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://feeds.skynews.com/feeds/rss/home.xml",
+    ]
+    extracted_data = extract_all_rss_feeds(urls)
+    print(extracted_data)
