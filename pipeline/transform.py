@@ -19,7 +19,11 @@ def find_sentiment(content: str) -> float:
 
 
 def get_key_words(content: str) -> list[str]:
-    """Cleans the content by removing stop words and punctuation, returning a list of significant words."""
+    """Extracts up to 10 keyword phrases from the content as two-word n-grams.
+
+    Returns a list of extracted keyword strings. Raises ValueError if the
+    extractor does not find any keywords in the content.
+    """
     nlp = spacy.load("en_core_web_md")
     nlp.add_pipe(
         "keyword_extractor",
