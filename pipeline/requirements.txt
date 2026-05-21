@@ -2,5 +2,5 @@ feedparser
 pylint
 pytest
 spacy
-vader
+vaderSentiment
 boto3
