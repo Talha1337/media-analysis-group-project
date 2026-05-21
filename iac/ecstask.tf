@@ -103,18 +103,12 @@ resource "aws_security_group" "c23_epipelagic_etl_sg" {
   name        = "c${var.COHORT_NUMBER}-epipelagic-etl-sg"
   description = "Security group for ETL ECS tasks"
   vpc_id      = data.aws_vpc.cohort_vpc.id
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-}
+  }
 }
 
 data "aws_iam_policy_document" "etl_task_policy_doc" {
