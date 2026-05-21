@@ -24,7 +24,7 @@ def get_key_words(content: str) -> list[str]:
     nlp.add_pipe(
         "keyword_extractor",
         last=True,
-        config={"top_n": 10, "min_ngram": 3, "max_ngram": 3, "strict": True},
+        config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
     )
     doc = nlp(content)
     all_keywords = [keyword[0] for keyword in doc._.keywords]
