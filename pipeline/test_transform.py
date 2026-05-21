@@ -2,7 +2,7 @@
 
 import pytest
 
-from pipeline.transform import (
+from transform import (
     find_names,
     find_sentiment,
     get_key_words,
