@@ -1,7 +1,7 @@
 """A transform script to process and clean the extracted data, ready to load into DynamoDB."""
 
 import spacy
-
+from pprint import pprint
 # Crucial: You must import the keyword_spacy package to register the factory!
 # python -m spacy download en_core_web_md
 import keyword_spacy
@@ -21,7 +21,8 @@ def find_names(content: str) -> list[str]:
     # Extract PERSON entities
     names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
     if not names:
-        raise ValueError("No names found in the content.")
+        # raise ValueError("No names found in the content.")
+        print("no names found")
     return names
 
 
@@ -53,17 +54,23 @@ def get_key_words(content: str) -> list[str]:
     doc = nlp(content)
     all_keywords = [keyword[0] for keyword in doc._.keywords]
     if not all_keywords:
-        raise ValueError("No keywords found in the content.")
+        print("No keywords found in the content.")
     return all_keywords
 
 
 def enrich_data(article_content: dict) -> dict:
     """Enriches the article data by adding extracted names and sentiment score."""
-    enriched_data = article_content.copy()
+    enriched_data = {}
     enriched_data["names"] = find_names(article_content["summary"])
     enriched_data["sentiment_score"] = find_sentiment(
         article_content["summary"])
     enriched_data["key_words"] = get_key_words(article_content["summary"])
+    enriched_data["published_at"] = article_content.get(
+        "published", "No published date")
+    enriched_data["article_link"] = article_content.get(
+        "id", "No article link")
+    enriched_data["feed_link"] = article_content.get(
+        "summary_detail", {}).get("base", "No feed link")
     return enriched_data
 
 
@@ -73,32 +80,40 @@ def enrich_all_data(articles: list[dict]) -> list[dict]:
 
 
 if __name__ == "__main__":
+    from extract import extract_all_rss_feeds
+    urls = [
+        "https://feeds.bbci.co.uk/news/rss.xml",
+        "https://feeds.skynews.com/feeds/rss/home.xml",
+    ]
+    extracted_data = extract_all_rss_feeds(urls)
+    enriched_data = enrich_data(extracted_data[0]['entries'][0])
+    pprint(enriched_data)
     # Example usage
-    positive_sample_article = {
-        "title": "Tech CEO Elon Musk Announces Groundbreaking Innovation",
-        "summary": """Elon Musk has achieved remarkable success with his latest venture.
-                    The brilliant entrepreneur's innovative approach has impressed industry
-                    leaders and brought tremendous Trump joy to millions of users worldwide.
-                    His excellent Donald Trump leadership and outstanding vision have transformed the technology sector positively."""
-    }
-    negative_sample_article = {
-        "title": "Political Crisis: Boris Johnson Faces Serious Allegations",
-        "summary": """Johnson, Trump and Biden is under intense scrutiny following damaging
-                    revelations about his administration. Mandelson critics argue the former
-                    prime minister's catastrophic Obama decisions have harmed the economy."""
-    }
-    positive_sentiment = find_sentiment(positive_sample_article["summary"])
-    negative_sentiment = find_sentiment(negative_sample_article["summary"])
-    print(f"Positive article sentiment: {positive_sentiment}")
-    print(f"Negative article sentiment: {negative_sentiment}")
+    # positive_sample_article = {
+    #     "title": "Tech CEO Elon Musk Announces Groundbreaking Innovation",
+    #     "summary": """Elon Musk has achieved remarkable success with his latest venture.
+    #                 The brilliant entrepreneur's innovative approach has impressed industry
+    #                 leaders and brought tremendous Trump joy to millions of users worldwide.
+    #                 His excellent Donald Trump leadership and outstanding vision have transformed the technology sector positively."""
+    # }
+    # negative_sample_article = {
+    #     "title": "Political Crisis: Boris Johnson Faces Serious Allegations",
+    #     "summary": """Johnson, Trump and Biden is under intense scrutiny following damaging
+    #                 revelations about his administration. Mandelson critics argue the former
+    #                 prime minister's catastrophic Obama decisions have harmed the economy."""
+    # }
+    # positive_sentiment = find_sentiment(positive_sample_article["summary"])
+    # negative_sentiment = find_sentiment(negative_sample_article["summary"])
+    # print(f"Positive article sentiment: {positive_sentiment}")
+    # print(f"Negative article sentiment: {negative_sentiment}")
 
-    print(
-        f"Names in positive article: {find_names(positive_sample_article['summary'])}")
-    print(
-        f"Names in negative article: {find_names(negative_sample_article['summary'])}")
-    print(
-        f"Positive article keywords: {get_key_words(positive_sample_article['summary'])}"
-    )
-    print(
-        f"Negative article keywords: {get_key_words(negative_sample_article['summary'])}"
-    )
+    # print(
+    #     f"Names in positive article: {find_names(positive_sample_article['summary'])}")
+    # print(
+    #     f"Names in negative article: {find_names(negative_sample_article['summary'])}")
+    # print(
+    #     f"Positive article keywords: {get_key_words(positive_sample_article['summary'])}"
+    # )
+    # print(
+    #     f"Negative article keywords: {get_key_words(negative_sample_article['summary'])}"
+    # )

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import feedparser
+from pprint import pprint
 
 
 def extract_rss_feed(url: str) -> dict:
@@ -34,4 +35,12 @@ if __name__ == "__main__":
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
     extracted_data = extract_all_rss_feeds(urls)
-    print(extracted_data)
+    # Show structure of the first entry
+    if extracted_data[0]['entries']:
+        print("First entry keys:", extracted_data[0]['entries'][0].keys())
+    # Show structure of the feed data
+    pprint(extracted_data[0])
+    print()
+    print()
+    # pprint(extracted_data[0].items())
+    pprint(extracted_data[0]['entries'][0])
