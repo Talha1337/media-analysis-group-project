@@ -185,6 +185,24 @@ resource "aws_ecs_task_definition" "c23_epipelagic_etl_task" {
   ])
 }
 
+resource "aws_security_group" "c23_epipelagic_dashboard_sg" {
+  name        = "c${var.COHORT_NUMBER}-epipelagic-dashboard-sg"
+  description = "Security group for Dashboard ECS tasks"
+  vpc_id      = data.aws_vpc.cohort_vpc.id
+  ingress {
+    from_port   = 8501
+    to_port     = 8501
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0 # enable dynamodb access
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_ecs_task_definition" "c23_epipelagic_dashboard_task" {
   family                   = "c${var.COHORT_NUMBER}-epipelagic-dashboard-task"
   network_mode             = "awsvpc"
@@ -207,9 +225,24 @@ resource "aws_ecs_task_definition" "c23_epipelagic_dashboard_task" {
         options = {
           "awslogs-group"         = "/ecs/c${var.COHORT_NUMBER}-epipelagic-dashboard-logs"
           "awslogs-region"        = var.REGION
-          "awslogs-stream-prefix" = "dashboard"
+          "awslogs-stream-prefix" = "dashboard",
+          "awslogs-create-group"    = "true"
         }
       }
     }
   ])
+}
+
+resource "aws_ecs_service" "c23_epipelagic_dashboard_service" {
+  name            = "c${var.COHORT_NUMBER}-epipelagic-dashboard-service"
+  cluster         = data.aws_ecs_cluster.cohort_cluster.id
+  task_definition = aws_ecs_task_definition.c23_epipelagic_dashboard_task.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = data.aws_subnets.public_subnets.ids
+    security_groups = [aws_security_group.c23_epipelagic_dashboard_sg.id]
+    assign_public_ip = true
+  }
 }
