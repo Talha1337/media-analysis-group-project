@@ -19,7 +19,7 @@ def run_pipeline(urls: list[str]) -> None:
     log.info("--- Starting the ETL pipeline ---")
     log.info("Step 1: EXTRACT")
     extracted_feeds = extract_all_rss_feeds(urls)
-    print(len(extracted_feeds))
+    log.info("Extracted %d feeds", len(extracted_feeds))
     for feed in extracted_feeds:
         # Enriches each article entry in the feed
         log.info("Step 2: TRANSFORM")
