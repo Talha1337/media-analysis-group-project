@@ -1,7 +1,9 @@
 """Tests for load.py using pytest."""
+# pylint: disable=redefined-outer-name
 
-import pytest
 from unittest.mock import patch, MagicMock
+import pytest
+from botocore.exceptions import ClientError
 from load import (
     connect_to_dynamodb,
     generate_article_sk,
@@ -10,6 +12,7 @@ from load import (
     prepare_item_for_load,
     load_all_items
 )
+
 
 @pytest.fixture
 def sample_article():
@@ -23,11 +26,12 @@ def sample_article():
         "key_words": ["markets", "rise", "economic", "data"]
     }
 
+
 @pytest.fixture
 def mock_dynamodb():
     """Fixture for mocked DynamoDB setup."""
     with patch('load.connect_to_dynamodb') as mock_connect, \
-         patch('load.prepare_item_for_load') as mock_prepare:
+            patch('load.prepare_item_for_load') as mock_prepare:
         mock_client = MagicMock()
         mock_client.batch_write_item = MagicMock()
 
@@ -56,8 +60,8 @@ class TestDynamoDBConnection:
     @patch('load.client')
     def test_connect_to_dynamodb_failure(self, mock_client):
         """Test handling of DynamoDB connection failure."""
-        from botocore.exceptions import ClientError
-        mock_client.side_effect = ClientError({"Error": {"Code": "ConnectionError"}}, "Connect")
+        mock_client.side_effect = ClientError(
+            {"Error": {"Code": "ConnectionError"}}, "Connect")
         with pytest.raises(ClientError):
             connect_to_dynamodb()
 
@@ -112,7 +116,8 @@ class TestAssignArticleID:
         article_link = "https://www.bbc.co.uk/news/articles/1"
         article_id_1 = assign_article_id(article_link)
         article_id_2 = assign_article_id(article_link)
-        assert all([isinstance(article_id_1, str), isinstance(article_id_2, str)])
+        assert all([isinstance(article_id_1, str),
+                   isinstance(article_id_2, str)])
         assert article_id_1 == article_id_2
 
     def test_assign_article_id_uniqueness(self):
@@ -133,12 +138,13 @@ class TestPrepareItemForLoad:
 
         assert item['PK'] == {"S": "joe_biden"}
         assert 'SK' in item and isinstance(item['SK'], dict)
-        assert item['feed_id'] == {"S": assign_feed_id(sample_article['feed_link'], url_parts)}
+        assert item['feed_id'] == {"S": assign_feed_id(
+            sample_article['feed_link'], url_parts)}
         assert item['published_at'] == {"S": sample_article['published_at']}
         assert item['names'] == {"SS": sample_article['names']}
-        assert item['sentiment_score'] == {"N": str(sample_article['sentiment_score'])}
+        assert item['sentiment_score'] == {
+            "N": str(sample_article['sentiment_score'])}
         assert item['key_words'] == {"SS": sample_article['key_words']}
-
 
     def test_prepare_item_for_load_missing_field(self, url_parts):
         """Test that prepare_item_for_load raises error when required field is missing."""
@@ -166,8 +172,8 @@ class TestLoadAllItems:
         load_all_items(enriched_articles, url_parts)
 
         mock_connect.assert_called_once()
-        mock_prepare.assert_called_once_with(enriched_articles[0], "joe_biden", url_parts)
-
+        mock_prepare.assert_called_once_with(
+            enriched_articles[0], "joe_biden", url_parts)
 
     def test_load_all_items_batch_loads_with_partitioning(self, mock_dynamodb, sample_article, url_parts):
         """Test that load_all_items batch loads multiple articles partitioned by name."""
@@ -183,21 +189,23 @@ class TestLoadAllItems:
                 "sentiment_score": 0.7,
                 "key_words": ["tech", "innovation"]
             }
-        ]       
+        ]
         load_all_items(enriched_articles, url_parts)
 
         mock_connect.assert_called_once()
         assert mock_prepare.call_count == 3
 
-        mock_prepare.assert_any_call(enriched_articles[0], "joe_biden", url_parts)
-        mock_prepare.assert_any_call(enriched_articles[1], "joe_biden", url_parts)
-        mock_prepare.assert_any_call(enriched_articles[1], "elon_musk", url_parts)
-
+        mock_prepare.assert_any_call(
+            enriched_articles[0], "joe_biden", url_parts)
+        mock_prepare.assert_any_call(
+            enriched_articles[1], "joe_biden", url_parts)
+        mock_prepare.assert_any_call(
+            enriched_articles[1], "elon_musk", url_parts)
 
     def test_load_all_items_empty_names_list(self, mock_dynamodb, url_parts):
         """Test that load_all_items handles article with empty names list."""
         mock_connect, mock_prepare = mock_dynamodb
-        
+
         enriched_articles = [
             {
                 "article_link": "https://www.bbc.co.uk/news/articles/1",
@@ -207,8 +215,8 @@ class TestLoadAllItems:
                 "sentiment_score": 0.5,
                 "key_words": ["test"]
             }
-        ]  
+        ]
         load_all_items(enriched_articles, url_parts)
-        
+
         mock_connect.assert_called_once()
         mock_prepare.assert_not_called()  # Should not call prepare if no names
