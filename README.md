@@ -28,11 +28,8 @@ Terraform is used to set up and provision resources. In the `iac` directory, run
 
 The API, dashboard and pipeline are all run on the cloud infrastructure. There are appropriate deploy scripts for each of these in their respective folders to allow for pushing to ECR e.g. `./deploy_dashboard.sh`. You may need to do `chmod +x [script name]` prior to this to ensure that the shell script can be executed.
 
+
 ## Usage
-
-### Deployment Scripts
-
-[I'll add a bit about this soon.]
 
 ### ETL Pipeline
 
