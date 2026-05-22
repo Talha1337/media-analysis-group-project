@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 
 log = logging.getLogger(__name__)
 
-URL_PARTS = ["https://", "http://", "www.", "news.", ".com", ".co.uk"]
+URL_PARTS = ["https://", "http://", "news.", ".com", ".co.uk"]
 
 
 def connect_to_dynamodb() -> BaseClient:
@@ -129,36 +129,3 @@ def load_all_items(articles: list[dict], url_parts: list[str] = URL_PARTS) -> No
                 f"Successfully loaded {len(requests)} items into DynamoDB.")
         except ClientError as e:
             log.error(f"Failed to batch load into DynamoDB: {e}")
-
-
-if __name__ == "__main__":
-    # Example usage
-
-    enriched_articles = [
-        {
-            "article_link": "https://www.bbc.com/news/articles/1",
-            "published_at": "2026-05-20T13:15:00Z",
-            "feed_link": "https://www.bbc.co.uk/news",
-            "names": ["joe_biden"],
-            "sentiment_score": 0.5,
-            "key_words": ["markets", "rise", "economic", "data"],
-        },
-        {
-            "article_link": "https://news.reuters.com/article/2",
-            "published_at": "2026-05-19T10:30:00Z",
-            "feed_link": "https://news.reuters.com",
-            "names": ["greta_thunberg", "joe_biden"],
-            "sentiment_score": 0.8,
-            "key_words": ["climate", "environment", "renewable", "agreement"],
-        },
-        {
-            "article_link": "https://www.cnbc.com/article/3",
-            "published_at": "2026-05-18T15:45:00Z",
-            "feed_link": "https://www.cnbc.com",
-            "names": ["elon_musk"],
-            "sentiment_score": 0.6,
-            "key_words": ["trade", "tariffs", "negotiations", "economy"],
-        },
-    ]
-
-    load_all_items(enriched_articles)

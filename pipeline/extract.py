@@ -14,13 +14,13 @@ def extract_rss_feed(url: str) -> dict:
     if not isinstance(url, str):
         log.error(f"Invalid URL: {url}. URL must be a string.")
         raise TypeError("URL must be a string.")
-    
+
     log.info(f"Extracting RSS feed from URL: {url}")
     data = feedparser.parse(url)
     validate_feed_data(data)
 
-        f"Extracted feed: {data.feed.get('link', '(Unknown link)')} with {len(data.entries)} entries.")
-        f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
+    log.info(f"""Extracted feed: {data.feed.get('link', '(Unknown link)')}
+             with {len(data.entries)} entries.""")
 
     return {
         "feed_name": data.feed["title"],
@@ -34,7 +34,7 @@ def extract_rss_feed(url: str) -> dict:
 def validate_feed_data(data: feedparser.FeedParserDict) -> None:
     """Validates the structure of the feed data."""
     entry_req_keys = ["title", "summary_detail", "published", "summary", "id"]
-    
+
     if not isinstance(data, feedparser.FeedParserDict):
         raise TypeError("Feed data must be a FeedParserDict.")
     if not hasattr(data, "feed") or not hasattr(data, "entries"):
@@ -44,7 +44,7 @@ def validate_feed_data(data: feedparser.FeedParserDict) -> None:
         raise TypeError("Feed metadata must be a dictionary.")
     if not isinstance(data.entries, list):
         raise TypeError("Entries data must be a list.")
-    
+
     # Validate that all entries have required keys
     for entry in data.entries:
         missing_keys = [key for key in entry_req_keys if key not in entry]

@@ -50,7 +50,8 @@ def find_names(content: str) -> list[str]:
 
 
 def find_sentiment(content: str) -> float:
-    """Analyzes the sentiment of the given content using VADER, giving a score between -1 (negative) and 1 (positive)."""
+    """Analyzes the sentiment of the given content using VADER, 
+    giving a score between -1 (negative) and 1 (positive)."""
     log.info(f"Calculating sentiment score.")
     sid_obj = SentimentIntensityAnalyzer()
     sentiment_dict = sid_obj.polarity_scores(content)

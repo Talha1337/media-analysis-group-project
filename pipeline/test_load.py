@@ -20,7 +20,7 @@ def sample_article():
     return {
         "article_link": "https://www.bbc.co.uk/news/business/2",
         "published_at": "2026-05-20T13:15:00Z",
-        "feed_link": "https://www.bbc.co.uk/news",
+        "feed_link": "https://feeds.bbci.co.uk/news/rss.xml",
         "names": ["joe_biden"],
         "sentiment_score": 0.5,
         "key_words": ["markets", "rise", "economic", "data"]
@@ -31,20 +31,22 @@ def sample_article():
 def mock_dynamodb():
     """Fixture for mocked DynamoDB setup."""
     with patch('load.connect_to_dynamodb') as mock_connect, \
-            patch('load.prepare_item_for_load') as mock_prepare:
+            patch('load.prepare_item_for_load') as mock_prepare, \
+            patch('load.find_existing_items') as mock_find_existing:
         mock_client = MagicMock()
         mock_client.batch_write_item = MagicMock()
 
         mock_connect.return_value = mock_client
         mock_prepare.return_value = {"PK": {"S": "test"}}
+        mock_find_existing.return_value = []
 
-        yield mock_connect, mock_prepare
+        yield mock_connect, mock_prepare, mock_find_existing
 
 
 @pytest.fixture
 def url_parts():
     """Fixture for URL parts to strip from feed links."""
-    return ["https://", "http://", "www.", "news.", ".com", ".co.uk"]
+    return ["https://", "http://", "news.", ".com", ".co.uk"]
 
 
 class TestDynamoDBConnection:
@@ -72,7 +74,7 @@ class TestGenerateArticleSortKey:
     def test_generate_article_sort_key_format(self, url_parts):
         """Test that the generated sort key has the correct format."""
         timestamp = "2026-05-20T13:15:00Z"
-        feed_link = "https://www.bbc.co.uk/news"
+        feed_link = "https://feeds.bbci.co.uk/news/rss.xml"
         article_id = "12345"
 
         feed_id = assign_feed_id(feed_link, url_parts)
@@ -91,20 +93,20 @@ class TestAssignFeedID:
 
     def test_assign_feed_id_consistency(self, url_parts):
         """Test that the same feed link always gets the same feed ID."""
-        feed_link = "https://www.bbc.co.uk/news"
+        feed_link = "https://feeds.bbci.co.uk/news/rss.xml"
         feed_id_1 = assign_feed_id(feed_link, url_parts)
         feed_id_2 = assign_feed_id(feed_link, url_parts)
-        assert feed_id_1 == "bbc_news"
+        assert feed_id_1 == "feeds.bbci_news_rss.xml"
         assert feed_id_1 == feed_id_2
 
     def test_assign_feed_id_uniqueness(self, url_parts):
         """Test that different feed links get different feed IDs."""
-        feed_link_1 = "https://www.bbc.co.uk/news"
-        feed_link_2 = "https://news.sky.com/home"
+        feed_link_1 = "https://feeds.bbci.co.uk/news/rss.xml"
+        feed_link_2 = "https://feeds.sky.com/feeds/rss/home.xml"
         feed_id_1 = assign_feed_id(feed_link_1, url_parts)
         feed_id_2 = assign_feed_id(feed_link_2, url_parts)
-        assert feed_id_1 == "bbc_news"
-        assert feed_id_2 == "sky_home"
+        assert feed_id_1 == "feeds.bbci_news_rss.xml"
+        assert feed_id_2 == "feeds.sky_feeds_rss_home.xml"
         assert feed_id_1 != feed_id_2
 
 
@@ -163,9 +165,10 @@ class TestPrepareItemForLoad:
 class TestLoadAllItems:
     """Test cases for loading all items into DynamoDB."""
 
-    def test_load_all_items_calls_prepare_and_connect(self, mock_dynamodb, sample_article, url_parts):
+    def test_load_all_items_calls_prepare_and_connect(self, mock_dynamodb,
+                                                      sample_article, url_parts):
         """Test that load_all_items calls prepare_item_for_load and connect_to_dynamodb."""
-        mock_connect, mock_prepare = mock_dynamodb
+        mock_connect, mock_prepare, mock_find_existing = mock_dynamodb
 
         # PK and SK aren't in the enriched articles, they're generated in prepare_item_for_load
         enriched_articles = [sample_article]
@@ -174,17 +177,20 @@ class TestLoadAllItems:
         mock_connect.assert_called_once()
         mock_prepare.assert_called_once_with(
             enriched_articles[0], "joe_biden", url_parts)
+        mock_find_existing.assert_called_once()
 
-    def test_load_all_items_batch_loads_with_partitioning(self, mock_dynamodb, sample_article, url_parts):
+
+    def test_load_all_items_batch_loads_with_partitioning(self, mock_dynamodb,
+                                                          sample_article, url_parts):
         """Test that load_all_items batch loads multiple articles partitioned by name."""
-        mock_connect, mock_prepare = mock_dynamodb
+        mock_connect, mock_prepare, mock_find_existing = mock_dynamodb
 
         enriched_articles = [
             sample_article,
             {
                 "article_link": "https://news.sky.com/technology/articles/1",
                 "published_at": "2026-05-21T10:00:00Z",
-                "feed_link": "https://news.sky.com/technology",
+                "feed_link": "https://feeds.skynews.com/feeds/rss/technology.xml",
                 "names": ["joe_biden", "elon_musk"],
                 "sentiment_score": 0.7,
                 "key_words": ["tech", "innovation"]
@@ -194,6 +200,7 @@ class TestLoadAllItems:
 
         mock_connect.assert_called_once()
         assert mock_prepare.call_count == 3
+        assert mock_find_existing.call_count == 3
 
         mock_prepare.assert_any_call(
             enriched_articles[0], "joe_biden", url_parts)
@@ -204,13 +211,13 @@ class TestLoadAllItems:
 
     def test_load_all_items_empty_names_list(self, mock_dynamodb, url_parts):
         """Test that load_all_items handles article with empty names list."""
-        mock_connect, mock_prepare = mock_dynamodb
+        mock_connect, mock_prepare, mock_find_existing = mock_dynamodb
 
         enriched_articles = [
             {
                 "article_link": "https://www.bbc.co.uk/news/articles/1",
                 "published_at": "2026-05-20T13:15:00Z",
-                "feed_link": "https://www.bbc.co.uk/news",
+                "feed_link": "https://feeds.bbci.co.uk/news/rss.xml",
                 "names": [],  # Empty names
                 "sentiment_score": 0.5,
                 "key_words": ["test"]
@@ -220,3 +227,4 @@ class TestLoadAllItems:
 
         mock_connect.assert_called_once()
         mock_prepare.assert_not_called()  # Should not call prepare if no names
+        mock_find_existing.assert_not_called()  # Should not call find_existing if no names
