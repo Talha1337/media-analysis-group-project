@@ -1,10 +1,13 @@
 """A transform script to process and clean the extracted data, ready to load into DynamoDB."""
 
+import logging
 from pprint import pprint
 import spacy
 # Crucial: You must import the keyword_spacy package to register the factory!
 # python -m spacy download en_core_web_md
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+log = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -40,33 +43,44 @@ def find_names(content: str) -> list[str]:
     names = [normalise_name(ent.text)
              for ent in doc.ents if ent.label_ == "PERSON"]
     if not names:
-        # raise ValueError("No names found in the content.")
-        print("no names found")
+        log.warning("No names found in the content.")
+    else:
+        log.info(f"Extracted {len(names)} names from the content.")
     return names
 
 
 def find_sentiment(content: str) -> float:
     """Analyzes the sentiment of the given content using VADER, giving a score between -1 (negative) and 1 (positive)."""
+    log.info(f"Calculating sentiment score.")
+    sid_obj = SentimentIntensityAnalyzer()
     sentiment_dict = sid_obj.polarity_scores(content)
-    return sentiment_dict["compound"]
+    sentiment = sentiment_dict["compound"]
+
+    if sentiment == 0:
+        log.warning("Neutral sentiment detected in the content.")
+    return sentiment
 
 
 def get_key_words(content: str) -> list[str]:
     """Extracts up to 10 keyword phrases from the content as two-word n-grams.
 
-    Returns a list of extracted keyword strings. Raises ValueError if the
+    Returns a list of extracted keyword strings. Logs error if the
     extractor does not find any keywords in the content.
     """
     if not content:
         raise ValueError("Content cannot be empty.")
     if not isinstance(content, str):
         raise TypeError("Content must be a string.")
+
     # Note: The keyword_spacy package must be installed and the keyword_extractor
     # python -m spacy download en_core_web_md
     doc = nlp(content)
     all_keywords = [keyword[0] for keyword in doc._.keywords]
+
     if not all_keywords:
-        print("No keywords found in the content.")
+        log.warning("No keywords found in the content.")
+    else:
+        log.info(f"Extracted {len(all_keywords)} keywords from the content.")
     return all_keywords
 
 
@@ -84,6 +98,7 @@ def enrich_data(article_content: dict) -> dict:
 
 def enrich_all_data(articles: list[dict]) -> list[dict]:
     """Enriches a list of article data dictionaries."""
+    log.info(f"Enriching {len(articles)} articles.")
     return [enrich_data(article) for article in articles]
 
 
