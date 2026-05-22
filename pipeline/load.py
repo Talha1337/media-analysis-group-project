@@ -27,7 +27,7 @@ def assign_feed_id(feed_link: str, url_parts: list[str]) -> str:
         feed_link = feed_link.replace(item, '') 
     
     feed_id = feed_link.replace('/', '_').lower()
-    log.info(f"Assigned feed ID: {feed_id}")
+    log.debug(f"Assigned feed ID: {feed_id}")
     return feed_id
 
 
