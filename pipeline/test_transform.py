@@ -121,6 +121,8 @@ class TestFindKeywords:
 
 
 class TestEnrichData:
+    """Tests for the enrich_data function."""
+
     @pytest.fixture
     def sample_article(self):
         """Provides a sample article content dictionary for testing."""
@@ -138,6 +140,8 @@ class TestEnrichData:
 
 
 class TestEnrichAllData:
+    """Tests for the enrich_all_data function."""
+
     @pytest.fixture
     def sample_articles(self):
         """Provides a list of sample article content dictionaries for testing."""
