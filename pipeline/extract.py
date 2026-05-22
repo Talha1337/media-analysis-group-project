@@ -10,10 +10,11 @@ log = logging.getLogger(__name__)
 
 def extract_rss_feed(url: str) -> dict:
     """Extracts data from a single RSS feed and its entries."""
-    if not isinstance(url, str):
-        print(f"Invalid URL: {url}. URL must be a string.")
-        raise TypeError("URL must be a string.")
     log.info(f"Extracting RSS feed from URL: {url}")
+    if not isinstance(url, str):
+        log.error(f"Invalid URL: {url}. URL must be a string.")
+        raise TypeError("URL must be a string.")
+
     data = feedparser.parse(url)
     validate_feed_data(data)
 
@@ -31,6 +32,7 @@ def extract_rss_feed(url: str) -> dict:
 def validate_feed_data(data: feedparser.FeedParserDict) -> None:
     """Validates the structure of the feed data."""
     entry_req_keys = ["title", "summary_detail", "published", "summary", "id"]
+    
     if not isinstance(data, feedparser.FeedParserDict):
         raise TypeError("Feed data must be a FeedParserDict.")
     if not hasattr(data, "feed") or not hasattr(data, "entries"):
@@ -40,6 +42,7 @@ def validate_feed_data(data: feedparser.FeedParserDict) -> None:
         raise TypeError("Feed metadata must be a dictionary.")
     if not isinstance(data.entries, list):
         raise TypeError("Entries data must be a list.")
+    
     # Validate that all entries have required keys
     for entry in data.entries:
         missing_keys = [key for key in entry_req_keys if key not in entry]
@@ -53,7 +56,15 @@ def extract_all_rss_feeds(urls: list[str]) -> list:
     all_data = []
 
     for url in urls:
-        feed_data = extract_rss_feed(url)
+        try:
+            feed_data = extract_rss_feed(url)
+            all_data.append(feed_data)
+
+        except TypeError as e:
+            log.error(f"Type validation failed for {url}: {e}")
+        except AttributeError as e:
+            log.error(f"Feed validation error for {url}, missing required components: {e}")
+
     return all_data
 
 
