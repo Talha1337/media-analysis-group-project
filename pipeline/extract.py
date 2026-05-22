@@ -10,18 +10,43 @@ log = logging.getLogger(__name__)
 
 def extract_rss_feed(url: str) -> dict:
     """Extracts data from a single RSS feed and its entries."""
+    if not isinstance(url, str):
+        print(f"Invalid URL: {url}. URL must be a string.")
+        raise TypeError("URL must be a string.")
     log.info(f"Extracting RSS feed from URL: {url}")
     data = feedparser.parse(url)
+    validate_feed_data(data)
 
     log.info(f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
 
     return {
-        "feed_name": data.feed.get("title", "No title"),
-        "feed_link": data.feed.get("link", "No link"),
-        "feed_updated_at": data.feed.get("updated", "No update time"),
+        "feed_name": data.feed["title"],
+        "feed_link": data.feed["link"],
+        "feed_updated_at": data.feed["updated"],
         "entries": data.entries,
         "extracted_at": datetime.now().isoformat(),
     }
+
+
+def validate_feed_data(data):
+    """Validates the structure of the feed data."""
+    entry_req_keys = ["title", "summary_detail", "published", "summary", "id"]
+    if not isinstance(data, feedparser.FeedParserDict):
+        print(
+            f"Invalid feed data: {data}. Feed data must be a FeedParserDict.")
+        raise TypeError("Feed data must be a FeedParserDict.")
+    if not isinstance(data.feed, dict):
+        print(f"Invalid feed data: {data}. Feed data must be a dictionary.")
+        raise TypeError("Feed data must be a dictionary.")
+    if not isinstance(data.entries, list):
+        print(f"Invalid feed data: {data}. Entries data must be a list.")
+        raise TypeError("Entries data must be a list.")
+    # Validate that all entries have required keys
+    for entry in data.entries:
+        missing_keys = [key for key in entry_req_keys if key not in entry]
+        if missing_keys:
+            raise AttributeError(
+                f"Entry missing required keys: {missing_keys}")
 
 
 def extract_all_rss_feeds(urls: list[str]) -> list:
