@@ -19,7 +19,7 @@ def extract_rss_feed(url: str) -> dict:
     data = feedparser.parse(url)
     validate_feed_data(data)
 
-    log.info(
+        f"Extracted feed: {data.feed.get('link', '(Unknown link)')} with {len(data.entries)} entries.")
         f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
 
     return {
