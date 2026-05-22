@@ -83,10 +83,10 @@ def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
     dynamodb = connect_to_dynamodb()
     requests = []  # Placeholder for batch write requests
     for article in articles:
+        feed_id = assign_feed_id(article["feed_link"], url_parts)
         for name in article[
             "names"
         ]:  # For each name, we create a separate item (partitioning)
-            feed_id = assign_feed_id(article["feed_link"], url_parts)
             existing_items = find_existing_items(
                 dynamodb,
                 "c23-epipelagic-dynamo-public-figures",
