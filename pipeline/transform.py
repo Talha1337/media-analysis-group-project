@@ -7,6 +7,26 @@ import spacy
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
+# ==============================================================================
+# GLOBAL INITIALIZATION: Load the model ONCE when the script starts up
+# ==============================================================================
+
+nlp = spacy.load("en_core_web_md")
+
+# Add the keyword pipeline component globally so it doesn't get re-added over and over
+if not nlp.has_pipe("keyword_extractor"):
+    nlp.add_pipe(
+        "keyword_extractor",
+        last=True,
+        config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
+    )
+
+# Initialize the VADER analyzer globally as well for a slight performance boost
+sid_obj = SentimentIntensityAnalyzer()
+print("Models loaded successfully!")
+# ==============================================================================
+
+
 def find_names(content: str) -> list[str]:
     """Extracts names of public figures from the given content using spaCy."""
     if not content:
@@ -14,7 +34,6 @@ def find_names(content: str) -> list[str]:
     if not isinstance(content, str):
         raise TypeError("Content must be a string.")
     # Load the English model matching keywords
-    nlp = spacy.load("en_core_web_md")
     doc = nlp(content)
 
     # Extract PERSON entities
@@ -28,7 +47,6 @@ def find_names(content: str) -> list[str]:
 
 def find_sentiment(content: str) -> float:
     """Analyzes the sentiment of the given content using VADER, giving a score between -1 (negative) and 1 (positive)."""
-    sid_obj = SentimentIntensityAnalyzer()
     sentiment_dict = sid_obj.polarity_scores(content)
     return sentiment_dict["compound"]
 
@@ -45,12 +63,6 @@ def get_key_words(content: str) -> list[str]:
         raise TypeError("Content must be a string.")
     # Note: The keyword_spacy package must be installed and the keyword_extractor
     # python -m spacy download en_core_web_md
-    nlp = spacy.load("en_core_web_md")
-    nlp.add_pipe(
-        "keyword_extractor",
-        last=True,
-        config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
-    )
     doc = nlp(content)
     all_keywords = [keyword[0] for keyword in doc._.keywords]
     if not all_keywords:
@@ -82,6 +94,7 @@ def normalise_name(name: str) -> str:
 
 if __name__ == "__main__":
     from extract import extract_all_rss_feeds
+
     urls = [
         "https://feeds.bbci.co.uk/news/rss.xml",
         "https://feeds.skynews.com/feeds/rss/home.xml",
