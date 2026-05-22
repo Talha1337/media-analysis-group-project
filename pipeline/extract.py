@@ -10,11 +10,11 @@ log = logging.getLogger(__name__)
 
 def extract_rss_feed(url: str) -> dict:
     """Extracts data from a single RSS feed and its entries."""
-    log.info(f"Extracting RSS feed from URL: {url}")
     if not isinstance(url, str):
         log.error(f"Invalid URL: {url}. URL must be a string.")
         raise TypeError("URL must be a string.")
-
+    
+    log.info(f"Extracting RSS feed from URL: {url}")
     data = feedparser.parse(url)
     validate_feed_data(data)
 
