@@ -9,9 +9,9 @@ from botocore.exceptions import ClientError
 def connect_to_dynamodb() -> BaseClient:
     """Initialise connection to DynamoDB."""
     try:
-        dynamodb = client('dynamodb')
+        dynamodb = client("dynamodb")
         return dynamodb
-    
+
     # Changing this with logging later, want to do that in a separate PR
     except ClientError as e:
         print(f"Failed to connect to DynamoDB: {e}")
@@ -21,9 +21,9 @@ def connect_to_dynamodb() -> BaseClient:
 def assign_feed_id(feed_link: str, url_parts: list[str]) -> str:
     """Assigns a unique feed ID based on the feed link."""
     for item in url_parts:
-        feed_link = feed_link.replace(item, '') 
-    
-    return feed_link.replace('/', '_').lower()
+        feed_link = feed_link.replace(item, "")
+
+    return feed_link.replace("/", "_").lower()
 
 
 def assign_article_id(article_link: str) -> str:
@@ -37,12 +37,12 @@ def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str
 
 
 def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dict:
-    """Converts enriched data for each article to DynamoDB item format with: 
+    """Converts enriched data for each article to DynamoDB item format with:
     PK (name), SK, feed_id, names, published_at, sentiment_score, key_words."""
     feed_id = assign_feed_id(article["feed_link"], url_parts)
     article_id = assign_article_id(article["article_link"])
     sort_key = generate_article_sk(article["published_at"], feed_id, article_id)
-    
+
     return {
         "PK": {"S": name},
         "SK": {"S": sort_key},
@@ -50,24 +50,58 @@ def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dic
         "names": {"SS": article["names"]},
         "published_at": {"S": article["published_at"]},
         "sentiment_score": {"N": str(article["sentiment_score"])},
-        "key_words": {"SS": article["key_words"]}
+        "key_words": {"SS": article["key_words"]},
     }
+
+
+def find_existing_items(
+    dynamodb,
+    table_name: str,
+    name: str,
+    published_at: str,
+    feed_id: str,
+) -> list:
+    """Checks for existing items in DynamoDB for a given name to prevent duplicates."""
+    sk_prefix = f"ARTICLE#{feed_id}#{published_at}#"
+    try:
+        response = dynamodb.query(
+            TableName=table_name,
+            KeyConditionExpression="PK = :name AND begins_with(SK, :sk_prefix)",
+            ExpressionAttributeValues={
+                ":name": {"S": name},
+                ":sk_prefix": {"S": sk_prefix},
+            },
+        )
+        return response.get("Items", [])
+    except ClientError as e:
+        print(f"Failed to query DynamoDB: {e}")
+        raise
 
 
 def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
     """Batch loads items into DynamoDB, partitioned by each identified name."""
     dynamodb = connect_to_dynamodb()
-    requests = [] # Placeholder for batch write requests
-
+    requests = []  # Placeholder for batch write requests
     for article in articles:
-        for name in article["names"]: # For each name, we create a separate item (partitioning)
-            item = prepare_item_for_load(article, name, url_parts)
-            requests.append({"PutRequest": {"Item": item}})
+        feed_id = assign_feed_id(article["feed_link"], url_parts)
+        for name in article[
+            "names"
+        ]:  # For each name, we create a separate item (partitioning)
+            existing_items = find_existing_items(
+                dynamodb,
+                "c23-epipelagic-dynamo-public-figures",
+                name,
+                article["published_at"],
+                feed_id,
+            )
+            if not existing_items:
+                item = prepare_item_for_load(article, name, url_parts)
+                requests.append({"PutRequest": {"Item": item}})
 
-    if requests:    
+    if requests:
         try:
             dynamodb.batch_write_item(
-                RequestItems={'c23-epipelagic-dynamo-public-figures': requests}
+                RequestItems={"c23-epipelagic-dynamo-public-figures": requests},
             )
             print(f"Successfully loaded {len(requests)} items into DynamoDB.")
         except ClientError as e:
@@ -76,33 +110,33 @@ def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
 
 if __name__ == "__main__":
     # Example usage
-    url_parts = ["https://", "http://", "www.","news.", ".com", ".co.uk"]
+    url_parts = ["https://", "http://", "www.", "news.", ".com", ".co.uk"]
 
     enriched_articles = [
         {
-        "article_link": "https://www.bbc.com/news/articles/1",
-        "published_at": "2026-05-20T13:15:00Z",
-        "feed_link": "https://www.bbc.co.uk/news",
-        "names": ["joe_biden"],
-        "sentiment_score": 0.5,
-        "key_words": ["markets", "rise", "economic", "data"]
+            "article_link": "https://www.bbc.com/news/articles/1",
+            "published_at": "2026-05-20T13:15:00Z",
+            "feed_link": "https://www.bbc.co.uk/news",
+            "names": ["joe_biden"],
+            "sentiment_score": 0.5,
+            "key_words": ["markets", "rise", "economic", "data"],
         },
         {
-        "article_link": "https://news.reuters.com/article/2",
-        "published_at": "2026-05-19T10:30:00Z",
-        "feed_link": "https://news.reuters.com",
-        "names": ["greta_thunberg", "joe_biden"],
-        "sentiment_score": 0.8,
-        "key_words": ["climate", "environment", "renewable", "agreement"]
+            "article_link": "https://news.reuters.com/article/2",
+            "published_at": "2026-05-19T10:30:00Z",
+            "feed_link": "https://news.reuters.com",
+            "names": ["greta_thunberg", "joe_biden"],
+            "sentiment_score": 0.8,
+            "key_words": ["climate", "environment", "renewable", "agreement"],
         },
         {
-        "article_link": "https://www.cnbc.com/article/3",
-        "published_at": "2026-05-18T15:45:00Z",
-        "feed_link": "https://www.cnbc.com",
-        "names": ["elon_musk"],
-        "sentiment_score": 0.6,
-        "key_words": ["trade", "tariffs", "negotiations", "economy"]
-        }
+            "article_link": "https://www.cnbc.com/article/3",
+            "published_at": "2026-05-18T15:45:00Z",
+            "feed_link": "https://www.cnbc.com",
+            "names": ["elon_musk"],
+            "sentiment_score": 0.6,
+            "key_words": ["trade", "tariffs", "negotiations", "economy"],
+        },
     ]
-    
+
     load_all_items(enriched_articles, url_parts)
