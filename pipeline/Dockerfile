@@ -48,8 +48,5 @@ USER appuser
 # Copy the source code into the container.
 COPY . .
 
-# Expose the port that the application listens on.
-EXPOSE 8000
-
-# Run the application.
+# Run the batch pipeline job.
 CMD python3 pipeline.py
