@@ -75,7 +75,7 @@ def find_existing_items(
         return response.get("Items", [])
     except ClientError as e:
         print(f"Failed to query DynamoDB: {e}")
-        return []
+        raise
 
 
 def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
