@@ -61,8 +61,7 @@ def enrich_data(article_content: dict) -> dict:
     """Enriches the article data by adding extracted names and sentiment score."""
     enriched_data = article_content.copy()
     enriched_data["names"] = find_names(article_content["summary"])
-    enriched_data["sentiment_score"] = find_sentiment(
-        article_content["summary"])
+    enriched_data["sentiment_score"] = find_sentiment(article_content["summary"])
     enriched_data["key_words"] = get_key_words(article_content["summary"])
     return enriched_data
 
@@ -72,6 +71,11 @@ def enrich_all_data(articles: list[dict]) -> list[dict]:
     return [enrich_data(article) for article in articles]
 
 
+def normalise_name(name: str) -> str:
+    """Normalizes a name by converting to lowercase and replacing spaces with underscores."""
+    return "_".join(name.strip().lower().split())
+
+
 if __name__ == "__main__":
     # Example usage
     positive_sample_article = {
@@ -79,13 +83,13 @@ if __name__ == "__main__":
         "summary": """Elon Musk has achieved remarkable success with his latest venture.
                     The brilliant entrepreneur's innovative approach has impressed industry
                     leaders and brought tremendous Trump joy to millions of users worldwide.
-                    His excellent Donald Trump leadership and outstanding vision have transformed the technology sector positively."""
+                    His excellent Donald Trump leadership and outstanding vision have transformed the technology sector positively.""",
     }
     negative_sample_article = {
         "title": "Political Crisis: Boris Johnson Faces Serious Allegations",
         "summary": """Johnson, Trump and Biden is under intense scrutiny following damaging
                     revelations about his administration. Mandelson critics argue the former
-                    prime minister's catastrophic Obama decisions have harmed the economy."""
+                    prime minister's catastrophic Obama decisions have harmed the economy.""",
     }
     positive_sentiment = find_sentiment(positive_sample_article["summary"])
     negative_sentiment = find_sentiment(negative_sample_article["summary"])
@@ -93,9 +97,11 @@ if __name__ == "__main__":
     print(f"Negative article sentiment: {negative_sentiment}")
 
     print(
-        f"Names in positive article: {find_names(positive_sample_article['summary'])}")
+        f"Names in positive article: {find_names(positive_sample_article['summary'])}"
+    )
     print(
-        f"Names in negative article: {find_names(negative_sample_article['summary'])}")
+        f"Names in negative article: {find_names(negative_sample_article['summary'])}"
+    )
     print(
         f"Positive article keywords: {get_key_words(positive_sample_article['summary'])}"
     )
