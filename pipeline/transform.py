@@ -65,7 +65,7 @@ def find_sentiment(content: str) -> float:
 def get_key_words(content: str) -> list[str]:
     """Extracts up to 10 keyword phrases from the content as two-word n-grams.
 
-    Returns a list of extracted keyword strings. Raises ValueError if the
+    Returns a list of extracted keyword strings. Logs error if the
     extractor does not find any keywords in the content.
     """
     if not content:
