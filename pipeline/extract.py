@@ -22,16 +22,22 @@ def extract_rss_feed(url: str) -> dict:
     }
 
 
-def validate_feed_data(data):
+def validate_feed_data(data: feedparser.FeedParserDict) -> None:
     """Validates the structure of the feed data."""
     entry_req_keys = ["title", "summary_detail", "published", "summary", "id"]
     if not isinstance(data, feedparser.FeedParserDict):
         print(
             f"Invalid feed data: {data}. Feed data must be a FeedParserDict.")
         raise TypeError("Feed data must be a FeedParserDict.")
+    if not hasattr(data, "feed") or not hasattr(data, "entries"):
+        print(
+            f"Invalid feed data: {data}. Feed data must have 'feed' and 'entries' attributes.")
+        raise AttributeError(
+            "Feed data must have 'feed' and 'entries' attributes.")
     if not isinstance(data.feed, dict):
-        print(f"Invalid feed data: {data}. Feed data must be a dictionary.")
-        raise TypeError("Feed data must be a dictionary.")
+        print(
+            f"Invalid feed data: {data}. Feed metadata must be a dictionary.")
+        raise TypeError("Feed metadata must be a dictionary.")
     if not isinstance(data.entries, list):
         print(f"Invalid feed data: {data}. Entries data must be a list.")
         raise TypeError("Entries data must be a list.")
