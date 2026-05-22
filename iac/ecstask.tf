@@ -116,7 +116,8 @@ data "aws_iam_policy_document" "etl_task_policy_doc" {
     sid    = "AllowPutItemDynamoDB"
     effect = "Allow"
     actions = [
-      "dynamodb:PutItem"
+      "dynamodb:PutItem",
+      "dynamodb:Query"
     ]
     resources = [aws_dynamodb_table.c23_epipelagic_public_figures.arn]
   }
@@ -160,7 +161,7 @@ resource "aws_ecs_task_definition" "c23_epipelagic_etl_task" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "512"
-  memory                   = "1024"
+  memory                   = "2048"
   # The execution role handles ECR pulls, secrets, and logging
   execution_role_arn = "arn:aws:iam::129033205317:role/ecsTaskExecutionRole"
   # The task role is what your application code uses
@@ -177,6 +178,7 @@ resource "aws_ecs_task_definition" "c23_epipelagic_etl_task" {
           "awslogs-group"         = "/ecs/c23-epipelagic-etl-logs"
           "awslogs-region"        = var.REGION
           "awslogs-stream-prefix" = "etl"
+          "awslogs-create-group"    = "true"
         }
       }
     }

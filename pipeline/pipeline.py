@@ -7,8 +7,8 @@ from transform import enrich_all_data
 from load import load_all_items
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 log = logging.getLogger(__name__)
 
@@ -19,15 +19,15 @@ def run_pipeline(urls: list[str]) -> None:
     log.info("--- Starting the ETL pipeline ---")
     log.info("Step 1: EXTRACT")
     extracted_feeds = extract_all_rss_feeds(urls)
-    
+    log.info("Extracted %d feeds", len(extracted_feeds))
     for feed in extracted_feeds:
         # Enriches each article entry in the feed
         log.info("Step 2: TRANSFORM")
-        enriched_entries = enrich_all_data(feed['entries'])
-        
+        enriched_entries = enrich_all_data(feed["entries"])
+
         log.info("Step 3: LOAD")
         load_all_items(enriched_entries)
-    
+
     log.info("--- ETL pipeline completed ---")
 
 
