@@ -31,16 +31,13 @@ RUN adduser \
     appuser
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+# Copy requirements first so dependency installation can be cached separately
+# from application source changes, while remaining compatible with builders
+# that do not support BuildKit-only mount syntax.
+COPY requirements.txt ./
+RUN python -m pip install -r requirements.txt
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m spacy download en_core_web_md
+RUN python -m spacy download en_core_web_md
 
 # Switch to the non-privileged user to run the application.
 USER appuser
