@@ -8,11 +8,13 @@ from botocore.exceptions import ClientError
 
 log = logging.getLogger(__name__)
 
+URL_PARTS = ["https://", "http://", "www.", "news.", ".com", ".co.uk"]
+
 
 def connect_to_dynamodb() -> BaseClient:
     """Initialise connection to DynamoDB."""
     try:
-        dynamodb = client('dynamodb')
+        dynamodb = client("dynamodb")
         log.info("Successfully connected to DynamoDB.")
         return dynamodb
 
@@ -21,19 +23,19 @@ def connect_to_dynamodb() -> BaseClient:
         raise
 
 
-def assign_feed_id(feed_link: str, url_parts: list[str]) -> str:
+def assign_feed_id(feed_link: str, url_parts: list[str] = URL_PARTS) -> str:
     """Assigns a unique feed ID based on the feed link."""
     for item in url_parts:
-        feed_link = feed_link.replace(item, '') 
-    
-    feed_id = feed_link.replace('/', '_').lower()
+        feed_link = feed_link.replace(item, "")
+
+    feed_id = feed_link.replace("/", "_").lower()
     log.debug(f"Assigned feed ID: {feed_id}")
     return feed_id
 
 
 def assign_article_id(article_link: str) -> str:
     """Assigns a unique article ID based on the article link."""
-    article_id = hashlib.md5(article_link.encode()).hexdigest()[:5] 
+    article_id = hashlib.md5(article_link.encode()).hexdigest()[:5]
     log.info(f"Generated article ID.")
     return article_id
 
@@ -43,7 +45,9 @@ def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str
     return f"ARTICLE#{feed_id}#{published_at}#{article_id}"
 
 
-def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dict:
+def prepare_item_for_load(
+    article: dict, name: str, url_parts: list[str] = URL_PARTS
+) -> dict:
     """Converts enriched data for each article to DynamoDB item format with:
     PK (name), SK, feed_id, names, published_at, sentiment_score, key_words."""
     try:
@@ -53,7 +57,7 @@ def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dic
     except KeyError as e:
         log.error(f"Missing expected article field: {e}")
         raise
-    
+
     return {
         "PK": {"S": name},
         "SK": {"S": sort_key},
@@ -89,16 +93,18 @@ def find_existing_items(
         raise
 
 
-def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
+def load_all_items(articles: list[dict], url_parts: list[str] = URL_PARTS) -> None:
     """Batch loads items into DynamoDB, partitioned by each identified name."""
     dynamodb = connect_to_dynamodb()
     requests = []  # Placeholder for batch write requests
     for article in articles:
         if not article["names"]:
-            log.warning(f"Article {article['article_link']} has no identified names. Skipping.")
+            log.warning(
+                f"Article {article['article_link']} has no identified names. Skipping."
+            )
         else:
-            for name in article["names"]: # For each name, we create a separate item
-        feed_id = assign_feed_id(article["feed_link"], url_parts)
+            for name in article["names"]:  # For each name, we create a separate item
+                feed_id = assign_feed_id(article["feed_link"], url_parts)
         for name in article[
             "names"
         ]:  # For each name, we create a separate item (partitioning)
@@ -125,7 +131,6 @@ def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
 
 if __name__ == "__main__":
     # Example usage
-    url_parts = ["https://", "http://", "www.", "news.", ".com", ".co.uk"]
 
     enriched_articles = [
         {
@@ -154,4 +159,4 @@ if __name__ == "__main__":
         },
     ]
 
-    load_all_items(enriched_articles, url_parts)
+    load_all_items(enriched_articles)
