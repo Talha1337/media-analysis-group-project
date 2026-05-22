@@ -12,7 +12,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 # ==============================================================================
 # GLOBAL INITIALIZATION: Load the model ONCE when the script starts up
 # ==============================================================================
-print("Loading spaCy NLP model into memory...")
+
 nlp = spacy.load("en_core_web_md")
 
 # Add the keyword pipeline component globally so it doesn't get re-added over and over
