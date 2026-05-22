@@ -103,11 +103,10 @@ def load_all_items(articles: list[dict], url_parts: list[str] = URL_PARTS) -> No
                 f"Article {article['article_link']} has no identified names. Skipping."
             )
         else:
-            for name in article["names"]:  # For each name, we create a separate item
+            for name in article["names"]: # For each name, create a separate item
                 feed_id = assign_feed_id(article["feed_link"], url_parts)
-        for name in article[
-            "names"
-        ]:  # For each name, we create a separate item (partitioning)
+        
+        for name in article["names"]:
             existing_items = find_existing_items(
                 dynamodb,
                 "c23-epipelagic-dynamo-public-figures",
