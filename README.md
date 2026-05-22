@@ -36,7 +36,7 @@ The API, dashboard and pipeline are all run on the cloud infrastructure. There a
 
 ### ETL Pipeline
 
-One can run `pipeline/pipeline.py` to extract RSS feed data, transforming it to enrich with public figures, sentiment analysis and keywords, to finally load this on to a DynamoDB table.
+One can run `pipeline/pipeline.py` to extract RSS feed data, transforming it to enrich with public figures, sentiment analysis and keywords, to finally load this onto a DynamoDB table.
 
 ### Dashboard
 
