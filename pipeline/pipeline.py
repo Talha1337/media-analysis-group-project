@@ -19,21 +19,21 @@ def run_pipeline(urls: list[str]) -> None:
     log.info("--- Starting the ETL pipeline ---")
     log.info("Step 1: EXTRACT")
     extracted_feeds = extract_all_rss_feeds(urls)
-    
+
     for feed in extracted_feeds:
         # Enriches each article entry in the feed
         log.info("Step 2: TRANSFORM")
         enriched_entries = enrich_all_data(feed['entries'])
-        
+
         log.info("Step 3: LOAD")
         load_all_items(enriched_entries)
-    
+
     log.info("--- ETL pipeline completed ---")
 
 
 if __name__ == "__main__":
-    urls = [
+    static_urls = [
         "https://feeds.bbci.co.uk/news/rss.xml",
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
-    run_pipeline(urls)
+    run_pipeline(static_urls)
