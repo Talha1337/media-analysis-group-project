@@ -1,4 +1,5 @@
 """A load script to interact with DynamoDB on AWS."""
+# pylint: disable=logging-fstring-interpolation
 
 import logging
 import hashlib
@@ -19,7 +20,7 @@ def connect_to_dynamodb() -> BaseClient:
         return dynamodb
 
     except ClientError as e:
-        log.exception("Failed to connect to DynamoDB")
+        log.exception(f"Failed to connect to DynamoDB: {e}")
         raise
 
 
@@ -36,7 +37,7 @@ def assign_feed_id(feed_link: str, url_parts: list[str] = URL_PARTS) -> str:
 def assign_article_id(article_link: str) -> str:
     """Assigns a unique article ID based on the article link."""
     article_id = hashlib.md5(article_link.encode()).hexdigest()[:5]
-    log.info(f"Generated article ID.")
+    log.info(f"Generated article ID: {article_id}")
     return article_id
 
 
@@ -53,7 +54,8 @@ def prepare_item_for_load(
     try:
         feed_id = assign_feed_id(article["feed_link"], url_parts)
         article_id = assign_article_id(article["article_link"])
-        sort_key = generate_article_sk(article["published_at"], feed_id, article_id)
+        sort_key = generate_article_sk(
+            article["published_at"], feed_id, article_id)
     except KeyError as e:
         log.error(f"Missing expected article field: {e}")
         raise
@@ -103,7 +105,7 @@ def load_all_items(articles: list[dict], url_parts: list[str] = URL_PARTS) -> No
                 f"Article {article['article_link']} has no identified names. Skipping."
             )
         else:
-            for name in article["names"]: # For each name, create a separate item
+            for name in article["names"]:  # For each name, create a separate item
                 feed_id = assign_feed_id(article["feed_link"], url_parts)
 
                 existing_items = find_existing_items(
@@ -120,9 +122,11 @@ def load_all_items(articles: list[dict], url_parts: list[str] = URL_PARTS) -> No
     if requests:
         try:
             dynamodb.batch_write_item(
-                RequestItems={"c23-epipelagic-dynamo-public-figures": requests},
+                RequestItems={
+                    "c23-epipelagic-dynamo-public-figures": requests},
             )
-            log.info(f"Successfully loaded {len(requests)} items into DynamoDB.")
+            log.info(
+                f"Successfully loaded {len(requests)} items into DynamoDB.")
         except ClientError as e:
             log.error(f"Failed to batch load into DynamoDB: {e}")
 

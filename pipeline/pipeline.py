@@ -32,8 +32,8 @@ def run_pipeline(urls: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    urls = [
+    static_urls = [
         "https://feeds.bbci.co.uk/news/rss.xml",
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
-    run_pipeline(urls)
+    run_pipeline(static_urls)

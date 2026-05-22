@@ -1,12 +1,10 @@
 """A transform script to process and clean the extracted data, ready to load into DynamoDB."""
 
 import logging
-import spacy
 from pprint import pprint
-
+import spacy
 # Crucial: You must import the keyword_spacy package to register the factory!
 # python -m spacy download en_core_web_md
-import keyword_spacy
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 log = logging.getLogger(__name__)
@@ -42,7 +40,8 @@ def find_names(content: str) -> list[str]:
     doc = nlp(content)
 
     # Extract PERSON entities
-    names = [normalise_name(ent.text) for ent in doc.ents if ent.label_ == "PERSON"]
+    names = [normalise_name(ent.text)
+             for ent in doc.ents if ent.label_ == "PERSON"]
     if not names:
         log.warning("No names found in the content.")
     else:
@@ -87,18 +86,14 @@ def get_key_words(content: str) -> list[str]:
 
 def enrich_data(article_content: dict) -> dict:
     """Enriches the article data by adding extracted names and sentiment score."""
-    enriched_data = {}
-    enriched_data["names"] = find_names(article_content["summary"])
-    enriched_data["sentiment_score"] = find_sentiment(article_content["summary"])
-    enriched_data["key_words"] = get_key_words(article_content["summary"])
-    enriched_data["published_at"] = article_content.get(
-        "published", "No published date"
-    )
-    enriched_data["article_link"] = article_content.get("id", "No article link")
-    enriched_data["feed_link"] = article_content.get("summary_detail", {}).get(
-        "base", "No feed link"
-    )
-    return enriched_data
+    return {
+        "names": find_names(article_content["summary"]),
+        "sentiment_score": find_sentiment(article_content["summary"]),
+        "key_words": get_key_words(article_content["summary"]),
+        "published_at": article_content.get("published", "No published date"),
+        "article_link": article_content.get("id", "No article link"),
+        "feed_link": article_content.get("summary_detail", {}).get("base", "No feed link"),
+    }
 
 
 def enrich_all_data(articles: list[dict]) -> list[dict]:
@@ -120,8 +115,8 @@ if __name__ == "__main__":
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
     extracted_data = extract_all_rss_feeds(urls)
-    enriched_data = enrich_data(extracted_data[0]["entries"][0])
-    pprint(enriched_data)
+    enriched_sample = enrich_data(extracted_data[0]['entries'][0])
+    pprint(enriched_sample)
     # Example usage
     positive_sample_article = {
         "title": "Tech CEO Elon Musk Announces Groundbreaking Innovation",
