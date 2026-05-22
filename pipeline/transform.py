@@ -16,11 +16,12 @@ print("Loading spaCy NLP model into memory...")
 nlp = spacy.load("en_core_web_md")
 
 # Add the keyword pipeline component globally so it doesn't get re-added over and over
-nlp.add_pipe(
-    "keyword_extractor",
-    last=True,
-    config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
-)
+if not nlp.has_pipe("keyword_extractor"):
+    nlp.add_pipe(
+        "keyword_extractor",
+        last=True,
+        config={"top_n": 10, "min_ngram": 2, "max_ngram": 2, "strict": True},
+    )
 
 # Initialize the VADER analyzer globally as well for a slight performance boost
 sid_obj = SentimentIntensityAnalyzer()
