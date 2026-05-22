@@ -8,6 +8,7 @@ from transform import (
     get_key_words,
     enrich_data,
     enrich_all_data,
+    normalise_name,
 )
 
 
@@ -163,3 +164,35 @@ class TestEnrichAllData:
             assert "names" in article
             assert "sentiment_score" in article
             assert "key_words" in article
+
+
+class TestNormaliseName:
+    """Tests for the normalise_name function."""
+
+    @pytest.mark.parametrize(
+        "name, expected_normalised",
+        [
+            ("Joe Biden", "joe_biden"),
+            ("Boris Johnson", "boris_johnson"),
+            ("Elon Musk", "elon_musk"),
+        ],
+    )
+    def test_normalise_name(self, name, expected_normalised):
+        """Test that normalise_name converts names to lowercase."""
+        assert normalise_name(name) == expected_normalised
+
+    @pytest.mark.parametrize(
+        "name, expected_normalised",
+        [("  Joe Biden  ", "joe_biden"), ("Boris   Johnson", "boris_johnson")],
+    )
+    def test_normalise_name_extra_spaces(self, name, expected_normalised):
+        """Test that normalise_name handles extra spaces correctly."""
+        assert normalise_name(name) == expected_normalised
+
+    @pytest.mark.parametrize(
+        "name, expected_normalised",
+        [("Joe", "joe"), ("Biden", "biden"), ("Elon", "elon")],
+    )
+    def test_normalise_name_single_word(self, name, expected_normalised):
+        """Test that normalise_name works correctly for single-word names."""
+        assert normalise_name(name) == expected_normalised
