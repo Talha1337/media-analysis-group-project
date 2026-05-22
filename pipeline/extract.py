@@ -17,7 +17,9 @@ def extract_rss_feed(url: str) -> dict:
     data = feedparser.parse(url)
     validate_feed_data(data)
 
-    log.info(f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
+    log.info(
+        f"Extracted feed: {data.feed.get('link', '(Unknown link)')} with {len(data.entries)} entries."
+    )
 
     return {
         "feed_name": data.feed["title"],
@@ -44,8 +46,7 @@ def validate_feed_data(data: feedparser.FeedParserDict) -> None:
     for entry in data.entries:
         missing_keys = [key for key in entry_req_keys if key not in entry]
         if missing_keys:
-            raise AttributeError(
-                f"Entry missing required keys: {missing_keys}")
+            raise AttributeError(f"Entry missing required keys: {missing_keys}")
 
 
 def extract_all_rss_feeds(urls: list[str]) -> list:
@@ -54,6 +55,7 @@ def extract_all_rss_feeds(urls: list[str]) -> list:
 
     for url in urls:
         feed_data = extract_rss_feed(url)
+        all_data.append(feed_data)
     return all_data
 
 
@@ -63,15 +65,15 @@ if __name__ == "__main__":
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
     extracted_data = extract_all_rss_feeds(urls)
-    
+
     # Show structure of the first entry
-    if extracted_data[0]['entries']:
-        print("First entry keys:", extracted_data[0]['entries'][0].keys())
-    
+    if extracted_data[0]["entries"]:
+        print("First entry keys:", extracted_data[0]["entries"][0].keys())
+
     # Show structure of the feed data
     pprint(extracted_data[0])
     print()
     print()
-    
+
     # pprint(extracted_data[0].items())
-    pprint(extracted_data[0]['entries'][0])
+    pprint(extracted_data[0]["entries"][0])
