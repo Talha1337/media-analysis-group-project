@@ -7,9 +7,12 @@ from load import load_all_items
 
 def run_pipeline(urls: list[str]) -> None:
     """Run the ETL pipeline: extracting from RSS, transforming by enriching, and loading into DynamoDB."""
-    extracted_data = extract_all_rss_feeds(urls)
-    enriched_data = enrich_all_data(extracted_data)
-    load_all_items(enriched_data)
+    # Extracts a list of feeds
+    extracted_feeds = extract_all_rss_feeds(urls)
+    for feed in extracted_feeds:
+        # Enriches each article entry in the feed
+        enriched_entries = enrich_all_data(feed['entries'])
+        load_all_items(enriched_entries)
 
 
 if __name__ == "__main__":
