@@ -54,7 +54,7 @@ def get_key_words(content: str) -> list[str]:
     doc = nlp(content)
     all_keywords = [keyword[0] for keyword in doc._.keywords]
     if not all_keywords:
-        raise ValueError("No keywords found in the content.")
+        print("No keywords found in the content.")
     return all_keywords
 
 
