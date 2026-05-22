@@ -30,12 +30,6 @@ def extract_all_rss_feeds(urls: list[str]) -> list:
 
     for url in urls:
         feed_data = extract_rss_feed(url)
-
-        if feed_data:
-            all_data.append(feed_data)
-        else:
-            log.warning(f"No data extracted from {url}. Skipping.")
-
     return all_data
 
 
