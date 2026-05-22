@@ -17,7 +17,7 @@ def connect_to_dynamodb() -> BaseClient:
         return dynamodb
 
     except ClientError as e:
-        log.error(f"Failed to connect to DynamoDB: {e}")
+        log.exception("Failed to connect to DynamoDB")
         raise
 
 
