@@ -40,7 +40,7 @@ One can run `pipeline/pipeline.py` to extract RSS feed data, transforming it to 
 
 ### Dashboard
 
-[This](18.175.238.37:8501) displays a dashboard for Streamlit, where one can look up any particular person, given their **normalised name** (donald_trump rather than Donald Trump). This will visualise sentiments for their different articles, as well as list out the keywords and articles found for the specific public figure.
+[This](http://18.175.238.37:8501) displays a dashboard for Streamlit, where one can look up any particular person, given their **normalised name** (donald_trump rather than Donald Trump). This will visualise sentiments for their different articles, as well as list out the keywords and articles found for the specific public figure.
 
 ### API
 
