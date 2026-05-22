@@ -3,17 +3,25 @@
 import spacy
 
 # Crucial: You must import the keyword_spacy package to register the factory!
+# python -m spacy download en_core_web_md
 import keyword_spacy
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 def find_names(content: str) -> list[str]:
     """Extracts names of public figures from the given content using spaCy."""
-    nlp = spacy.load("en_core_web_sm")  # Load the English model
+    if not content:
+        raise ValueError("Content cannot be empty.")
+    if not isinstance(content, str):
+        raise TypeError("Content must be a string.")
+    # Load the English model matching keywords
+    nlp = spacy.load("en_core_web_md")
     doc = nlp(content)
 
     # Extract PERSON entities
     names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
+    if not names:
+        raise ValueError("No names found in the content.")
     return names
 
 
@@ -30,6 +38,12 @@ def get_key_words(content: str) -> list[str]:
     Returns a list of extracted keyword strings. Raises ValueError if the
     extractor does not find any keywords in the content.
     """
+    if not content:
+        raise ValueError("Content cannot be empty.")
+    if not isinstance(content, str):
+        raise TypeError("Content must be a string.")
+    # Note: The keyword_spacy package must be installed and the keyword_extractor
+    # python -m spacy download en_core_web_md
     nlp = spacy.load("en_core_web_md")
     nlp.add_pipe(
         "keyword_extractor",
@@ -45,39 +59,46 @@ def get_key_words(content: str) -> list[str]:
 
 def enrich_data(article_content: dict) -> dict:
     """Enriches the article data by adding extracted names and sentiment score."""
+    enriched_data = article_content.copy()
+    enriched_data["names"] = find_names(article_content["summary"])
+    enriched_data["sentiment_score"] = find_sentiment(
+        article_content["summary"])
+    enriched_data["key_words"] = get_key_words(article_content["summary"])
+    return enriched_data
 
 
 def enrich_all_data(articles: list[dict]) -> list[dict]:
     """Enriches a list of article data dictionaries."""
+    return [enrich_data(article) for article in articles]
 
 
 if __name__ == "__main__":
     # Example usage
     positive_sample_article = {
         "title": "Tech CEO Elon Musk Announces Groundbreaking Innovation",
-        "content": """Elon Musk has achieved remarkable success with his latest venture.
+        "summary": """Elon Musk has achieved remarkable success with his latest venture.
                     The brilliant entrepreneur's innovative approach has impressed industry
                     leaders and brought tremendous Trump joy to millions of users worldwide.
                     His excellent Donald Trump leadership and outstanding vision have transformed the technology sector positively."""
     }
     negative_sample_article = {
         "title": "Political Crisis: Boris Johnson Faces Serious Allegations",
-        "content": """Johnson, Trump and Biden is under intense scrutiny following damaging
+        "summary": """Johnson, Trump and Biden is under intense scrutiny following damaging
                     revelations about his administration. Mandelson critics argue the former
                     prime minister's catastrophic Obama decisions have harmed the economy."""
     }
-    positive_sentiment = find_sentiment(positive_sample_article["content"])
-    negative_sentiment = find_sentiment(negative_sample_article["content"])
+    positive_sentiment = find_sentiment(positive_sample_article["summary"])
+    negative_sentiment = find_sentiment(negative_sample_article["summary"])
     print(f"Positive article sentiment: {positive_sentiment}")
     print(f"Negative article sentiment: {negative_sentiment}")
 
     print(
-        f"Names in positive article: {find_names(positive_sample_article['content'])}")
+        f"Names in positive article: {find_names(positive_sample_article['summary'])}")
     print(
-        f"Names in negative article: {find_names(negative_sample_article['content'])}")
+        f"Names in negative article: {find_names(negative_sample_article['summary'])}")
     print(
-        f"Positive article keywords: {get_key_words(positive_sample_article['content'])}"
+        f"Positive article keywords: {get_key_words(positive_sample_article['summary'])}"
     )
     print(
-        f"Negative article keywords: {get_key_words(negative_sample_article['content'])}"
+        f"Negative article keywords: {get_key_words(negative_sample_article['summary'])}"
     )
