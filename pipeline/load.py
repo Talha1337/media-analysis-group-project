@@ -62,18 +62,17 @@ def find_existing_items(
     feed_id: str,
 ) -> list:
     """Checks for existing items in DynamoDB for a given name to prevent duplicates."""
+    sk_prefix = f"ARTICLE#{feed_id}#{published_at}#"
     try:
         response = dynamodb.query(
             TableName=table_name,
-            KeyConditionExpression="PK = :name",
-            ExpressionAttributeValues={":name": {"S": name}},
+            KeyConditionExpression="PK = :name AND begins_with(SK, :sk_prefix)",
+            ExpressionAttributeValues={
+                ":name": {"S": name},
+                ":sk_prefix": {"S": sk_prefix},
+            },
         )
-        return [
-            item
-            for item in response.get("Items", [])
-            if item["published_at"]["S"] == published_at
-            and item["feed_id"]["S"] == feed_id
-        ]
+        return response.get("Items", [])
     except ClientError as e:
         print(f"Failed to query DynamoDB: {e}")
         return []
