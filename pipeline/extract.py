@@ -1,9 +1,10 @@
+# pylint: disable=logging-fstring-interpolation
 """An extract script to interact with the RSS data."""
 
 import logging
 from datetime import datetime
-import feedparser
 from pprint import pprint
+import feedparser
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +18,8 @@ def extract_rss_feed(url: str) -> dict:
     data = feedparser.parse(url)
     validate_feed_data(data)
 
-    log.info(f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
+    log.info(
+        f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
 
     return {
         "feed_name": data.feed["title"],
@@ -55,24 +57,25 @@ def extract_all_rss_feeds(urls: list[str]) -> list:
 
     for url in urls:
         feed_data = extract_rss_feed(url)
+        all_data.append(feed_data)
     return all_data
 
 
 if __name__ == "__main__":
-    urls = [
+    static_urls = [
         "https://feeds.bbci.co.uk/news/rss.xml",
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
-    extracted_data = extract_all_rss_feeds(urls)
-    
+    extracted_data = extract_all_rss_feeds(static_urls)
+
     # Show structure of the first entry
     if extracted_data[0]['entries']:
         print("First entry keys:", extracted_data[0]['entries'][0].keys())
-    
+
     # Show structure of the feed data
     pprint(extracted_data[0])
     print()
     print()
-    
+
     # pprint(extracted_data[0].items())
     pprint(extracted_data[0]['entries'][0])
