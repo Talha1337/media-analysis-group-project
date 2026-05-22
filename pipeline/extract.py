@@ -1,8 +1,11 @@
 """An extract script to interact with the RSS data."""
 
+import logging
 from datetime import datetime
 import feedparser
 from pprint import pprint
+
+log = logging.getLogger(__name__)
 
 
 def extract_rss_feed(url: str) -> dict:
@@ -10,8 +13,11 @@ def extract_rss_feed(url: str) -> dict:
     if not isinstance(url, str):
         print(f"Invalid URL: {url}. URL must be a string.")
         raise TypeError("URL must be a string.")
+    log.info(f"Extracting RSS feed from URL: {url}")
     data = feedparser.parse(url)
     validate_feed_data(data)
+
+    log.info(f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
 
     return {
         "feed_name": data.feed["title"],
@@ -49,8 +55,6 @@ def extract_all_rss_feeds(urls: list[str]) -> list:
 
     for url in urls:
         feed_data = extract_rss_feed(url)
-        all_data.append(feed_data)
-
     return all_data
 
 
@@ -60,12 +64,15 @@ if __name__ == "__main__":
         "https://feeds.skynews.com/feeds/rss/home.xml",
     ]
     extracted_data = extract_all_rss_feeds(urls)
+    
     # Show structure of the first entry
     if extracted_data[0]['entries']:
         print("First entry keys:", extracted_data[0]['entries'][0].keys())
+    
     # Show structure of the feed data
     pprint(extracted_data[0])
     print()
     print()
+    
     # pprint(extracted_data[0].items())
     pprint(extracted_data[0]['entries'][0])
