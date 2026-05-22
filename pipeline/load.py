@@ -25,26 +25,18 @@ def assign_feed_id(feed_link: str, url_parts: list[str]) -> str:
     
     return feed_link.replace('/', '_').lower()
 
-def assign_feed_id(feed_link: str) -> str:
-    """Assigns a unique feed ID based on the feed link."""
 
 def assign_article_id(article_link: str) -> str:
     """Assigns a unique article ID based on the article link."""
     return hashlib.md5(article_link.encode()).hexdigest()[:5]
 
-def assign_article_id(article_link: str) -> str:
-    """Assigns a unique article ID based on the article link."""
-
-
-def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str:
-    """Creates a unique article SK with the format: 
-    ARTICLE#[feed_id]#[published_at]#[article_id]"""
 
 def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str:
     """Creates a unique article sort key."""
     return f"ARTICLE#{feed_id}#{published_at}#{article_id}"
 
-def prepare_item_for_load(article: dict, name: str) -> dict:
+
+def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dict:
     """Converts enriched data for each article to DynamoDB item format with: 
     PK (name), SK, feed_id, names, published_at, sentiment_score, key_words."""
     feed_id = assign_feed_id(article["feed_link"], url_parts)
@@ -62,7 +54,7 @@ def prepare_item_for_load(article: dict, name: str) -> dict:
     }
 
 
-def load_all_items(articles: list[dict]) -> None:
+def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
     """Batch loads items into DynamoDB, partitioned by each identified name."""
     dynamodb = connect_to_dynamodb()
     requests = [] # Placeholder for batch write requests

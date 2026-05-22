@@ -145,7 +145,7 @@ class TestPrepareItemForLoad:
         article = {
             "article_link": "https://www.bbc.co.uk/news/articles/1",
             "published_at": "2026-05-20T13:15:00Z",
-            # Missing feed_name
+            # Missing feed_link
             "names": ["joe_biden"],
             "sentiment_score": 0.5,
             "key_words": ["markets"]
