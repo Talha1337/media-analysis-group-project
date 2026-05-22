@@ -15,21 +15,15 @@ log = logging.getLogger(__name__)
 def run_pipeline(urls: list[str]) -> None:
     """Run the ETL pipeline: extracting from RSS, transforming by enriching, and loading into DynamoDB."""
     # Extracts a list of feeds
+    log.info("--- Starting the ETL pipeline ---")
+    log.info("Step 1: EXTRACT")
     extracted_feeds = extract_all_rss_feeds(urls)
     for feed in extracted_feeds:
         # Enriches each article entry in the feed
+        log.info("Step 2: TRANSFORM")
         enriched_entries = enrich_all_data(feed['entries'])
+        log.info("Step 3: LOAD")
         load_all_items(enriched_entries)
-    log.info("--- Starting the ETL pipeline ---")
-
-    log.info("Step 1: EXTRACT")
-    extracted_data = extract_all_rss_feeds(urls)
-
-    log.info("Step 2: TRANSFORM")
-    enriched_data = enrich_all_data(extracted_data)
-
-    log.info("Step 3: LOAD")
-    load_all_items(enriched_data)
     
     log.info("--- ETL pipeline completed ---")
 
