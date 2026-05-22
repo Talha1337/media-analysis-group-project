@@ -1,7 +1,8 @@
 """Testing the extract script with pytest."""
+# pylint: disable=redefined-outer-name
 
-import pytest
 from unittest.mock import patch
+import pytest
 from feedparser import FeedParserDict
 from extract import extract_all_rss_feeds, extract_rss_feed
 
@@ -59,7 +60,7 @@ class TestExtractURLs:
             extract_rss_feed(invalid_urls)
 
     @pytest.mark.parametrize(
-        "valid_urls",
+        "urls",
         [
             "http://example.com/rss",
             "https://example.com/feed",
@@ -70,11 +71,11 @@ class TestExtractURLs:
     )
     @patch("extract.feedparser.parse")
     def test_extract_rss_feed_valid(
-        self, mock_parse, valid_urls, mock_feedparser_response
+        self, mock_parse, urls, mock_feedparser_response
     ):
         """Test that extraction works for valid input types."""
         mock_parse.return_value = mock_feedparser_response
-        extract_rss_feed(valid_urls)
+        extract_rss_feed(urls)
 
 
 class TestExtractFeedData:
