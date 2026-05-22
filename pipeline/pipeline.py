@@ -14,7 +14,8 @@ log = logging.getLogger(__name__)
 
 
 def run_pipeline(urls: list[str]) -> None:
-    """Run the ETL pipeline: extracting from RSS, transforming by enriching, and loading into DynamoDB."""
+    """Run the ETL pipeline: extracting from RSS, transforming by enriching, 
+    and loading into DynamoDB."""
     # Extracts a list of feeds
     log.info("--- Starting the ETL pipeline ---")
     log.info("Step 1: EXTRACT")
