@@ -13,7 +13,7 @@ def extract_rss_feed(url: str) -> dict:
     log.info(f"Extracting RSS feed from URL: {url}")
     data = feedparser.parse(url)
 
-    log.info(f"Extracted feed: {data.feed.get('title', 'No title')} with {len(data.entries)} entries.")
+    log.info(f"Extracted feed: {data.feed.get("link", "(Unknown link)")} with {len(data.entries)} entries.")
 
     return {
         "feed_name": data.feed.get("title", "No title"),
