@@ -1,20 +1,23 @@
 """A load script to interact with DynamoDB on AWS."""
 
+import logging
 import hashlib
 from boto3 import client
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
+
+log = logging.getLogger(__name__)
 
 
 def connect_to_dynamodb() -> BaseClient:
     """Initialise connection to DynamoDB."""
     try:
         dynamodb = client('dynamodb')
+        log.info("Successfully connected to DynamoDB.")
         return dynamodb
-    
-    # Changing this with logging later, want to do that in a separate PR
+
     except ClientError as e:
-        print(f"Failed to connect to DynamoDB: {e}")
+        log.error(f"Failed to connect to DynamoDB: {e}")
         raise
 
 
@@ -23,12 +26,16 @@ def assign_feed_id(feed_link: str, url_parts: list[str]) -> str:
     for item in url_parts:
         feed_link = feed_link.replace(item, '') 
     
-    return feed_link.replace('/', '_').lower()
+    feed_id = feed_link.replace('/', '_').lower()
+    log.info(f"Assigned feed ID: {feed_id}")
+    return feed_id
 
 
 def assign_article_id(article_link: str) -> str:
     """Assigns a unique article ID based on the article link."""
-    return hashlib.md5(article_link.encode()).hexdigest()[:5]
+    article_id = hashlib.md5(article_link.encode()).hexdigest()[:5] 
+    log.info(f"Generated article ID.")
+    return article_id
 
 
 def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str:
@@ -39,9 +46,13 @@ def generate_article_sk(published_at: str, feed_id: str, article_id: str) -> str
 def prepare_item_for_load(article: dict, name: str, url_parts: list[str]) -> dict:
     """Converts enriched data for each article to DynamoDB item format with: 
     PK (name), SK, feed_id, names, published_at, sentiment_score, key_words."""
-    feed_id = assign_feed_id(article["feed_link"], url_parts)
-    article_id = assign_article_id(article["article_link"])
-    sort_key = generate_article_sk(article["published_at"], feed_id, article_id)
+    try:
+        feed_id = assign_feed_id(article["feed_link"], url_parts)
+        article_id = assign_article_id(article["article_link"])
+        sort_key = generate_article_sk(article["published_at"], feed_id, article_id)
+    except KeyError as e:
+        log.error(f"Missing expected article field: {e}")
+        raise
     
     return {
         "PK": {"S": name},
@@ -60,18 +71,21 @@ def load_all_items(articles: list[dict], url_parts: list[str]) -> None:
     requests = [] # Placeholder for batch write requests
 
     for article in articles:
-        for name in article["names"]: # For each name, we create a separate item (partitioning)
-            item = prepare_item_for_load(article, name, url_parts)
-            requests.append({"PutRequest": {"Item": item}})
+        if not article["names"]:
+            log.warning(f"Article {article['article_link']} has no identified names. Skipping.")
+        else:
+            for name in article["names"]: # For each name, we create a separate item
+                item = prepare_item_for_load(article, name, url_parts)
+                requests.append({"PutRequest": {"Item": item}})
 
     if requests:    
         try:
             dynamodb.batch_write_item(
                 RequestItems={'c23-epipelagic-dynamo-public-figures': requests}
             )
-            print(f"Successfully loaded {len(requests)} items into DynamoDB.")
+            log.info(f"Successfully loaded {len(requests)} items into DynamoDB.")
         except ClientError as e:
-            print(f"Failed to batch load into DynamoDB: {e}")
+            log.error(f"Failed to batch load into DynamoDB: {e}")
 
 
 if __name__ == "__main__":
