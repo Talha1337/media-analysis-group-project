@@ -17,7 +17,7 @@ Members of the _Otranto Development Team_ (Cohort 23):
 
 ### Infrastructure
 
-Terraform is used to set up and provision resources. In the `iac` directory, use `terraform apply` to begin this process. You will need to define the following variables to run this (in a `.tfvars` file):
+Terraform is used to set up and provision resources. In the `iac` directory, run `terraform init` first, then apply the configuration with an explicit variables file, for example: `terraform apply -var-file="terraform.tfvars"`. You will need to define the following variables in that `.tfvars` file:
 
 - REGION
 - AWS_KEY
